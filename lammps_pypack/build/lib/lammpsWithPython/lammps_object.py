@@ -3,9 +3,571 @@ from typing import List, Union, Tuple
 
 import numpy as np
 import pandas as pd
+import copy as cp
 
-import deprecation
-from .lammps_structure import *
+class frame:
+    '''
+    An object representing a 3D frame or truss.
+
+    Attributes:
+        nodes - list of node objects
+        elements - list of element objects representing links between nodes
+        materials - list of material objects storing material properties
+        xsections - list of cross section objects storing cross section properties
+        atoms - list of atom objects to use as lammps atoms
+        atom_start_id - ID of first atom in frame
+
+    Methods:
+        __init__ - creates xsec and element objects as defined by input lists to initialize a frame instance
+        __str__ - generates a string representing an instance's data for easy printing
+        __add__ - 
+        __radd__ -
+        __iadd__ - 
+
+        add_nodes - Create new nodes and add to frame
+
+        add_constraints - Fix DOF of specified node DOF
+
+        add_materials - Add new or existing materials to frame
+        
+        add_xsections - Add new or existing cross sections (xsection objects) to frame
+
+        add_elements - Add new elements defined between nodes and add to frame
+
+        discretize(atom_distance: float) - interpolates coordinates along elements based on provided atom_distance
+          - returns data needed to add the frame geometry to a Simulation instance
+    '''
+    def __init__(
+        self,
+        node_list: list = [],
+        *,
+        constraint_list: list = [[]],
+        material_list: list = [],
+        xsection_list: list = [],
+        element_list: list = []
+        ):
+
+        # Create nodes and set fixed DOF
+        self.nodes = []
+        if len(node_list) > 0: self.add_nodes(node_list)
+        if len(constraint_list) > 0: self.add_constraints(constraint_list)
+
+        # Create materials, cross sections, and elements with provided data; Add to frame
+        self.materials = []
+        if len(material_list) > 0: self.add_materials(material_list)
+        self.xsections = []
+        if len(xsection_list) > 0: self.add_xsections(xsection_list)
+
+        # Create elements with provided element data; Add to 'elements' list; add to connected nodes
+        self.elements = []
+        if len(element_list) > 0: self.add_elements(element_list)
+
+        for nd in self.nodes: nd.assign_connected_elements()
+        self.atoms = []
+
+    def __str__(self) -> str:
+        print_str = f'Frame Data\n'
+        print_str += f'Nodes:\n'
+        print_str += f'{self.nodes}\n'
+        print_str += f'X-Sections:\n'
+        for xsec in self.xsections: print_str += f'{xsec}\n'
+        print_str += f'Elements:\n'
+        for el in self.elements: print_str += f'{el}\n'
+        all_atoms = [at for at in el.atoms for el in self.elements]
+        print_str += f'Number of Atoms: {len(all_atoms)}\n'
+        return print_str
+
+    def __add__(self, frame_2):
+        if not isinstance(frame_2, frame): raise Exception('Only frame instances can be combined')
+        new_frame_nodes = []
+        new_frame_materials = []
+        new_frame_xsections = []
+        new_frame_elements = []
+
+        node_ids = []
+        for nd in self.nodes + frame_2.nodes:
+            # Add node to list of new frame's nodes if ID is not already taken
+            if not nd.id in node_ids:
+                new_frame_nodes.append(nd)
+                node_ids.append(nd.id)
+            else:
+                # Verify that nodes to merge are identical
+                dup_node = next(filter(lambda new_node: new_node.id == nd.id, new_frame_nodes), None)
+                if not all(nd.coords == dup_node.coords): raise Exception('Coordinates of nodes to merge do not match')
+                if not all(nd.fixed_dof == dup_node.fixed_dof): raise Exception('Constraints of nodes to merge do not match')
+
+        material_names = []
+        for mat in self.materials + frame_2.materials:
+            # Add material to list of new frame's materials if its name is not already taken
+            if not mat.name in material_names:
+                new_frame_materials.append(mat)
+                material_ids.append(mat.name)
+            else:
+                # Verify that materials to merge are identical
+                dup_mat = next(filter(lambda new_mat: new_mat.name == mat.name, new_frame_materials), None)
+                if not mat.E == dup_mat.E: raise Exception('Young\'s moduli of materials to merge do not match')
+                if not mat.rho == dup_mat.rho: raise Exception('Atom densities of materials to merge do not match')
+
+        xsection_ids = []
+        for xsec in self.xsections + frame_2.xsections:
+            # Add cross section to list of new frame's cross sections if ID is not already taken
+            if not xsec.id in xsection_ids:
+                new_frame_xsections.append(xsec)
+                xsection_ids.append(xsec.id)
+            else:
+                # Verify that cross sections to merge are identical
+                dup_xsec = next(filter(lambda new_xsec: new_xsec.id == xsec.id, new_frame_xsections), None)
+                if not xsec.A == dup_node.A: raise Exception('Area of xsections to merge do not match')
+                if not xsec.Iy == dup_node.Iy: raise Exception('Iy of xsections to merge do not match')
+                if not xsec.Iz == dup_node.Iz: raise Exception('Iz of xsections to merge do not match')
+                if not xsec.Ip == dup_node.Ip: raise Exception('Ip of xsections to merge do not match')
+                if not xsec.J == dup_node.J: raise Exception('J of xsections to merge do not match')
+
+        for el in self.elements + frame_2.elements:
+            # Check if element already exists between specified nodes
+            duplicate_element = False
+            for existing_el in new_frame_elements:
+                node_pair = [existing_el.node_a.id, existing_el.node_b.id]
+                if el.node_a.id in node_pair and el.node_b.id in node_pair:
+                    duplicate_element = True
+                    dup_element = existing_el
+                    break
+            # Add element to frame if not overlapping an already-assigned element
+            if not duplicate_element:
+                new_frame_elements.append(el)
+            else:
+                # Verify that elements to merge are identical
+                if not el.material.name == dup_element.material.name: raise Exception('Materials of elements to merge do not match')
+                if not el.xsec.id == dup_element.xsec.id: raise Exception('Cross sections of elements to merge do not match')
+                for i_eq in range(3): 
+                    if not el.para_eq[i_eq] is dup_element.para_eq[i_eq]: raise Exception('Parametric equations of elements to merge do not match')
+                if not all(el.z_vec == dup_element.z_vec): raise Exception('zvec of elements to merge do not match')
+
+        combined_frame = frame(
+            node_list = new_frame_nodes,
+            material_list = new_frame_materials,
+            xsection_list = new_frame_xsections,
+            element_list = new_frame_elements
+        )
+        return combined_frame
+
+    def __radd__(self, frame_2):
+        new_frame = self.__add__(frame_2)
+        return new_frame
+
+    def __iadd__(self, frame_2):
+        self = self + frame_2
+        return self
+
+    def add_nodes(self, node_list: list):
+        node_ids = [nd.id for nd in self.nodes]
+        for nd in node_list:
+            if isinstance(nd, node) and not nd.id in node_ids:
+                self.nodes.append(nd)
+                node_ids.append(nd.id)
+            elif len(nd) > 0:
+                coords = np.array(nd)
+                if len(coords) < 6: coords = np.append(coords, np.zeros(6 - len(coords)))
+                new_node = node(self, coords)
+                self.nodes.append(new_node)
+                node_ids.append(new_node.id)
+
+    def add_constraints(self, constraints: list):
+        for constraint in constraints:
+            con = np.array(constraint[1:-1])
+            nd = next(filter(lambda nd: nd.id == constraint[0], self.nodes), None)
+            if nd is None: raise Exception('No matching node id in frame for constraint')
+            else:
+                # Fill con array with ones if only a few dimensions are given
+                if len(con) < 6: con = np.append(con, np.ones(6 - len(con)))
+                nd.fixed_dof = con
+
+    def add_materials(self, material_list: list):
+        # Create materials with provided data; Add to 'materials' list
+        material_names = [existing_mat.name for existing_mat in self.materials]
+        for mat in material_list:
+            if isinstance(mat, material) and not mat.name in material_names:
+                self.materials.append(mat)
+                material_names.append(mat.name)
+            elif isinstance(mat, list) and not mat[0] in material_names:
+                new_material = material(*tuple(mat))
+                self.materials.append(new_material)
+                material_names.append(new_material.name)
+
+    def add_xsections(self, xsection_list: list):
+        xsection_ids = [xsec.id for xsec in self.xsections]
+        for xsec in xsection_list:
+            if isinstance(xsec, xsection) and not xsec.id in xsection_ids:
+                self.xsections.append(xsec)
+                xsection_ids.append(xsec.id)
+            elif isinstance(xsec, list) and not xsec[0] in xsection_ids:
+                new_xsection = xsection(*tuple(xsec))
+                self.xsections.append(new_xsection)
+                xsection_ids.append(new_xsection.id)
+
+    def add_elements(self, elements):
+        for el in elements:
+            # Get node ids of element to add
+            if isinstance(el[0], node): node_a = el[0].id
+            else: node_a = el[0]
+            if isinstance(el[1], node): node_b = el[1].id
+            else: node_b = el[1]
+
+            # Check if element already exists between specified nodes - create and add if not
+            duplicate_element = False
+            for existing_el in self.elements:
+                node_pair = [existing_el.node_a.id, existing_el.node_b.id]
+                if node_a in node_pair and node_b in node_pair:
+                    duplicate_element = True
+                    break
+            if not duplicate_element: self.elements.append(element(*tuple([self] + el)))
+
+    def rotate(self, rotation_angle: float, axis: list | np.ndarray = [1, 0, 0]):
+        '''
+        A function to return a copy of the frame rotated about a specified axis.
+        Arguments:
+          - axis: list | np.array = [1, 0, 0] - The axis of rotation specified by:
+              1. x,y,z coordinates of a vector starting at the origin
+              2. a pair of nodes
+        '''
+        if len(axis) < 1 or len(axis) > 3: raise Exception('Invalid specified axis of rotation')
+        if all([isinstance(coord, (int, float)) for coord in axis]):
+            if len(axis) < 3: axis = np.concat(np.array(axis), np.zeros(3 - len(axis)))
+            rotation_axis = axis
+        elif all([isinstance(node_obj, node) for node_obj in axis]):
+            if len(axis) != 2: raise Exception('Only two nodes can be specified to determine the axis of rotation')
+            rotation_axis = axis[1].coords[0:2] - axis[0].coords[0:2]
+        #### Define transformation matrix
+        euler_angles = [0, 0, 0]
+        transform_matrix = rotation_axis
+        return self.transform_affine(transform_matrix)
+
+    def mirror(self, mirror_plane_pts: np.ndarray):
+        ########### Add code to construct transformation matrix 
+        return self.transform_affine(transform_matrix)
+
+    def transform_affine(self, transform_matrix: np.ndarray):
+        new_frame = cp.deepcopy(self)
+        for i, nd in enumerate(self.nodes):
+            transformed_coords = affine_matrix @ np.concat(nd.coords, np.array([1]))
+            new_frame.nodes[i].coords = transformed_coords[0:2]
+        return new_frame
+    
+
+    def discretize(self, atom_distance: float, start_atom_id: int = 0) -> tuple:
+        '''
+        A function to discretize a frame given a specified atom spacing using the element.discretize() method.
+        It returns data of beams, bonds joining beams to the nodes, and angles between beams joined at the nodes,
+        all formatted for straightforward use with the Simulation class' functions.
+
+        Arguments:
+         - atom_distance: float - the maximum distance permitted between atoms
+         - start_atom_id: int = 0 - the number of atoms already in the simulation (offsets the atom ids)
+
+        Outputs:
+         - A tuple of data for beam, bond, and angle creation (beams, bonds, angles)
+           - beams: list (# beams x 3) - [# atoms, start_coords, end_coords]
+             - # atoms: int
+             - start_coords: np.array (1 x 3) - x,y,z coordinates of an end atom
+             - end_coords: np.array (1 x 3) - x,y,z coordinates of other end atom
+           - bonds: np.array (#beam connections x 2) - [node_atom, end_atom]
+             - node_atom: int - ID of atom at a node
+             - end_atom: int - ID of atom at end of beam (to join with a bond to the atom at the node)
+           - angles: np.array (#beam connections x 3) - [node_atom_1, node_atom_0, end_atom]
+             - node_atom_1: int - ID of atom attached to the atom at a node
+             - node_atom_0: int - ID of atom at the node
+             - end_atom: int - ID of atom at end of beam (to join with an angle to the atom at the node)
+        '''
+        # Discretize the frame's elements into atoms (removing duplicate atoms at nodes)
+        self.atoms = []
+        self.start_atom_id = start_atom_id
+        self.atoms = [el.discretize(atom_distance) for el in self.elements]
+        beams = [[len(el.atoms), el.atoms[0], el.atoms[-1]] for el in self.elements]
+
+        atom_pairs = []
+        angles = []
+        for nd in self.nodes:
+            # Get ID of atom connected to the node's atom (to define the angle)
+            if nd.elements[0].node_a is nd: adjacent_atom_id = nd.atom.id + 1
+            elif nd.elements[0].node_b is nd: adjacent_atom_id = nd.atom.id - 1
+            # Add a bond and angle for each element connected to node
+            for el in nd.elements[1:]:
+                # Ensure the atom at the far end of the beam is not mistakenly chosen
+                if el.node_a is nd: end_atom = el.atoms[0].id
+                elif el.node_b is nd: end_atom = el.atoms[-1].id
+                atom_pairs.append([nd.atom.id, end_atom])
+                angles.append([adjacent_atom_id, nd.atom.id, end_atom])
+        bonds = np.array(atom_pairs)
+        angles = np.array(angles)
+
+        return (beams, bonds, angles)
+
+class node:
+    '''
+    An object representing an endpoint or connection point between elements.
+
+    Attributes:
+        parent_frame: frame - 
+        id: int - A unique ID (within the frame)
+        coords: np.array (1 x 6) - 
+        fixed_dof: np.array (1 x 6) = [0,0,0,0,0,0] - 
+        atom: atom - 
+
+    Methods:
+        __init__ - 
+
+        assign_connected_elements() - 
+    '''
+    def __init__(self, parent_frame: frame, coords: np.ndarray, constraint: np.ndarray = [0,0,0,0,0,0]):
+        self.parent_frame = parent_frame
+        self.id: int = len(parent_frame.nodes)
+        self.coords = coords
+        self.fixed_dof = constraint
+
+    def assign_connected_elements(self):
+        '''
+        A function to list all elements connected to the node.
+        This is important for discretization in allowing for the removal of coincident atoms at connected beam ends.
+        '''
+        self.elements = [el for el in self.parent_frame.elements if self in [el.node_a, el.node_b]]
+
+    def edit_coords(self, new_coords: np.array):
+        if len(new_coords) < 6: new_coords = np.append(new_coords, np.zeros(6 - len(new_coords)))
+        #### TODO - Check connected elements to verify parametric eqs are still satisfied; Recalculate element lengths
+        self.coords = new_coords
+
+class xsection:
+    '''
+    An object that contains cross-section data, for convenient assigning to various elements
+
+    Attributes:
+        id: int - Unique ID
+        atom_diameter: float - diameter of atoms used in discretization
+        thickness_coefficient: float = 1 - 
+        stretching_coefficient: float = 1
+        bending_coefficient: float = 1
+
+    Methods:
+        __init__ - Initializes an instance with material and cross section properties
+        __str__ - generates a string representing an instance's data for easy printing
+    '''
+    def __init__(
+        self,
+        id_num: int,
+        atom_diameter: float,
+        *,
+        thickness_coefficient: float = 1,
+        stretching_coefficient: float = 1,
+        bending_coefficient: float = 1
+        ):
+        self.id = id_num
+        self.atom_diameter = atom_diameter
+        self.thickness_coefficient = thickness_coefficient
+        self.stretching_coefficient = stretching_coefficient
+        self.bending_coefficient = bending_coefficient
+
+    def __str__(self):
+        xsec_str_1 = f'ID {self.id} - atom diameter = {self.atom_diameter}, '
+        xsec_str_2 = f'Coefficients: thickness = {self.thickness_coefficient}, stretching = {self.stretching_coefficient}, bending = {self.bending_coefficient}'
+        return xsec_str_1 + xsec_str_2
+
+class material:
+    '''
+    An object containing material data, for convenient assigning to various elements
+
+    Attributes:
+    name: str - A unique name
+    E: float - Young's Modulus
+    rho: float - Density of atoms used in discretization
+    '''
+    def __init__(self, name: str, E: float, rho: float):
+        self.name = name
+        self.E = E
+        self.rho = rho
+
+    def __str__(self):
+        return f'Name {self.name} - (E, v)=({self.E}, {self.v})'
+
+class element:
+    '''
+    An object representing a parametric member extending between two nodes.
+
+    Attributes:
+        parent_frame: frame - The frame containing the element
+        node_a: node - A node at one end of the element
+        node_b: node - A node at the other end of the element
+        material: str
+        xsec: int - ID of cross section to apply to element
+        para_eq: list = [] - An optional list (1 x 3) of parametric equations defining the x,y,z values along the element (with parameter between 0 at node_a and 1 at node_b)
+        z_vec = [] - A list or numpy array representing a vector defining the orientation of the element's cross section
+
+    Methods:
+        __init__ - 
+        __str__ - 
+
+        set_parametric_eqs - Set parametric equations defining element path
+
+        calc_arc_length() - Calculate arc length of a parametric curve in 3D
+
+        set_material - Assign new or existing material to element
+
+        set_xsection - Assign new or existing xsection to element
+
+        discretize() - Discretize element into atoms separated by no more than a provided distance
+    '''
+    def __init__(
+        self,
+        parent_frame: frame,
+        node_a: int | node,
+        node_b: int | node,
+        mat: list | material | str | None = None,
+        xsec: list | xsection | int | None = None,
+        para_eq: list = [],
+        z_vec = []
+        ):
+        self.parent_frame = parent_frame
+        # Assign end nodes
+        if isinstance(node_a, int): 
+            matching_node_a = next(filter(lambda nd: nd.id == node_a, parent_frame.nodes), None)
+            if matching_node_a is None: raise Exception('No matching node found for element end a')
+            self.node_a = matching_node_a
+        else: 
+            self.node_a = node_a
+        if isinstance(node_b, int): 
+            matching_node_b = next(filter(lambda nd: nd.id == node_b, parent_frame.nodes), None)
+            if matching_node_b is None: raise Exception('No matching node found for element end b')
+            self.node_b = matching_node_b
+        else: 
+            self.node_b = node_b
+
+        # Set parametric equations for element path (if provided) and calculate element length
+        self.set_parametric_eqs(para_eq)
+        if len(para_eq) == 0: self.L = np.linalg.norm(self.node_b.coords - self.node_a.coords)
+        else: self.L = self.calc_arc_length(para_eq)
+
+        # Assign material and cross section - create instance if info is provided instead of objects
+        # If not specified and the frame only has one, assign that one as the default
+        if not mat is None: self.set_material(mat)
+        elif len(self.parent_frame.materials) == 1: self.set_material(self.parent_frame.materials[0])
+        if not xsec is None: self.set_xsection(xsec)
+        elif len(self.parent_frame.xsections) == 1: self.set_xsection(self.parent_frame.xsections[0])
+
+    def __str__(self):
+        return f'Node Pair ({self.node_a.id}, {self.node_b.id}); X-Section {self.xsec.id}'
+
+    def set_parametric_eqs(self, para_eq: list):
+        # Handle parametric equation inputs - create linear parametric equations if none are provided
+        if len(para_eq) > 0:
+            para_eq.append([0 for i in range(3-len(para_eq))])
+
+            # Replace any constants with callable functions
+            for coord_eq in para_eq: 
+                if not isinstance(coord_eq, callable): 
+                    coord_eq = lambda t: coord_eq * t
+
+            # Calculate node coordinates if they are not already set
+            if len(self.node_a.coords) == 0:
+                self.node_a.coords = np.array([para_eq[0](0), para_eq[1](0), para_eq[2](0)])
+            if len(self.node_b.coords) == 0:
+                self.node_b.coords = np.array([para_eq[0](1), para_eq[1](1), para_eq[2](1)])
+
+            # Check all coordinates for mismatching values with parametric function
+            for i_eq, coord_eq in enumerate(para_eq):
+                if coord_eq(0) != self.node_a.coords[i_eq]: 
+                    raise Exception(f'Parametric equation f(0) does not coincide with start node with ID {self.node_a.id}')
+                if coord_eq(1) != self.node_b.coords[i_eq]: 
+                    raise Exception(f'Parametric equation f(1) does not coincide with end node with ID {self.node_b.id}')
+            self.para_eq = para_eq
+        elif len(self.node_a.coords) > 0 and len(self.node_b.coords) > 0:
+            x_eq = lambda t: (1-t)*self.node_a.coords[0] + t*self.node_b.coords[0]
+            y_eq = lambda t: (1-t)*self.node_a.coords[1] + t*self.node_b.coords[1]
+            z_eq = lambda t: (1-t)*self.node_a.coords[2] + t*self.node_b.coords[2]
+            self.para_eq = [x_eq, y_eq, z_eq]
+
+    def calc_arc_length(self, para_eq: list[callable], bounds: list = [0, 1], n_pts: int = 200) -> float:
+        '''
+        Numerically calculate the arc length of a curve defined by parametric equations between the provided bounds.
+        It uses the numpy gradient and trapz functions, and allows the number of points (n_pts) to be specified.
+
+        Arguments:
+         - para_eq: list[callable] (1 x 3) - [x_eq(), y_eq(), z_eq()] defining x, y, and z with single parameter
+         - bounds: list = [0, 1] (1 x 2) - the start and end values of the parameter to integrate between
+         - n_pts: int = 200 - the number of points used to evaluate the parametric equations for numeric integration
+        
+        Outputs:
+         - L: float - The calculated arc-length between the start and end points along the curve.
+        '''
+        t = np.linspace(bounds[0], bounds[1], n_pts)
+        (x, y, z) = (para_eq[0](t), para_eq[1](t), para_eq[2](t))
+        L = np.trapz(np.sqrt(np.gradient(x, t)**2 + np.gradient(y, t)**2 + np.gradient(z, t)**2), t)
+        return L
+
+    def set_material(self, mat: list | material | str):
+        if isinstance(mat, list):
+            self.parent_frame.add_materials([mat])
+            self.material = next(filter(lambda mat_entry: mat_entry.name == mat[0], self.parent_frame.materials), None)
+        elif isinstance(mat, material):
+            self.parent_frame.add_materials([mat])
+            self.material = next(filter(lambda mat_entry: mat_entry.name == mat.name, self.parent_frame.materials), None)
+        else:
+            mat = next(filter(lambda mat_entry: mat_entry.name == mat, parent_frame.materials), None)
+            if mat is None: raise Exception('No material with matching name assigned to frame')
+            else: self.material = mat
+
+    def set_xsection(self, xsec: list | xsection | int):
+        if isinstance(xsec, list):
+            self.parent_frame.add_xsections([xsec])
+            self.xsec = next(filter(lambda xsec_entry: xsec_entry.id == xsec[0], self.parent_frame.xsections), None)
+        elif isinstance(xsec, xsection):
+            self.parent_frame.add_xsections([xsec])
+            self.xsec = next(filter(lambda xsec_entry: xsec_entry.id == xsec.id, self.parent_frame.xsections), None)
+        else:
+            frame_xsec = next(filter(lambda xsec_entry: xsec_entry.id == xsec, self.parent_frame.xsections), None)
+            if frame_xsec is None: raise Exception('No xsection with matching id assigned to frame')
+            else: self.xsec = frame_xsec
+
+    def discretize(self, atom_distance: float) -> list:
+        '''
+        A function to discretize an element with spacing not greater than the specified atom distance.
+        It removes overlapping atoms at nodes where elements join, and returns the list of atoms.
+        '''
+        ### Do not call except from frame.discretize() -- atom ids need to be fully reassigned
+        # Compute atom coordinates with parametric equations
+        N_atoms = 1 + int(np.ceil(self.L/atom_distance))
+        t = np.linspace(0, 1, N_atoms)
+        (x_eq, y_eq, z_eq) = tuple(self.para_eq)
+        atom_coords = np.array([x_eq(t), y_eq(t), z_eq(t)]).T
+
+        # Remove end atom coordinates if the created atoms would overlap with already existing atoms
+        if not self.node_b.elements[0] is self: atom_coords = atom_coords[0:-2]
+        if not self.node_a.elements[0] is self: atom_coords = atom_coords[1:-1]
+
+        # Create the element's atoms; add to 'atoms' list; if end atoms, assign to coincident node
+        self.atoms = [atom(coords, parent_element=self) for coords in atom_coords]
+        if self.node_b.elements[0] is self: self.node_b.atom = self.atoms[-1]
+        if self.node_a.elements[0] is self: self.node_a.atom = self.atoms[0]
+        return self.atoms
+
+class atom:
+    def __init__(self, coords: np.array, *, N_previous_atoms: int = 0, parent_element: element | None = None):
+        self.coords = coords
+        if not parent_element is None:
+            self.parent_element = parent_element
+            parent_frame = parent_element.parent_frame
+            N_previous_atoms = parent_frame.start_atom_id + len(parent_frame.atoms)
+        self.id = N_previous_atoms
+
+if __name__ == "__main__":
+    nodes = [[0,0], [0,1], [1,1], [1,0]]
+    (E, rho) = (0.96 * 10**6, 0.5)
+    materials = [['test_material_0', E, rho]]
+    beam_thickness = 0.002
+    xsecs = [[0, beam_thickness]]
+    elements = [[0, 1], [1, 2], [2, 3], [3, 0], [0, 2], [1, 3]]
+    constraints = [[0, 1,1,1,1,1,1], [1, 1,1,1,1,1,1]]
+    new_frame = frame(nodes, material_list = materials, xsection_list = xsecs, element_list = elements, constraint_list = constraints)
+    new_frame.discretize(0.02)
+    print(new_frame)
 
 class Simulation:
 
@@ -80,7 +642,7 @@ class Simulation:
             os.mkdir(self._path)
         with open(os.path.join(self._path, "in.main_file"), "w") as f:
             # Atom style: angle, for bending and stretching rigidity, and sphere, for granular interactions
-            f.write("atom_style hybrid molecular sphere\n") # Originally (pre 4/10/25) hybrid angle sphere
+            f.write("atom_style hybrid angle sphere\n")
             # You can make this whatever you prefer! Consider lj for maximum eyebrow-raising potential
             f.write("units si\n")
             # We're just using one processor today
@@ -106,12 +668,9 @@ class Simulation:
             # and your sim will die. However, since we don't know how many we need at the time of the writing of this line,
             # We just put more that we think we'll need. And since we have lines like "bond_coeff * 0 0", we set all of the 
             # extra ones to zero. If you need to put in more than I allow here, feel free to change this line!
-            reserved_variables_str = "create_box 100 simulationStation"
-            reserved_variables_str += " bond/types 100000 extra/bond/per/atom 100"
-            reserved_variables_str += " angle/types 10000 extra/angle/per/atom 100"
-            reserved_variables_str += " dihedral/types 1000 extra/dihedral/per/atom 100"
-            f.write(reserved_variables_str + "\n")
-
+            f.write(
+                "create_box 100 simulationStation bond/types 100000 extra/bond/per/atom 100 angle/types 10000 extra/angle/per/atom 100\n"
+            )
             # Make the boundry fixed, periodic, or shrink wrapped
             f.write(
                 "change_box	all boundary "
@@ -136,11 +695,9 @@ class Simulation:
             # These are the potentials we will use
             f.write("bond_style harmonic\n")
             f.write("angle_style cosine\n")
-            f.write("dihedral_style spherical\n")
             f.write("\n")
             f.write("bond_coeff * 0 0\n")
             f.write("angle_coeff * 0\n")
-            f.write("dihedral_coeff * 1 0 1 0 1 1 90 0 1 90 0\n")
             # Turn on integration
             f.write("fix integration all nve/sphere\n")
             # This allows you to put in more particles and bonds. You might need to change this if you want an even bigger simulation
@@ -190,7 +747,7 @@ class Simulation:
         self._particles = pd.concat([self._particles, new_particles], axis=0)
         # Put the particles into the simulation
         with open(os.path.join(self._path, "in.main_file"), "a") as f:
-            f.write(f"\ninclude {filename}\n")
+            f.write(f"\ninclude " + filename + " \n")
             f.write(f"set type {self._type_iter} diameter {diameter}\n")
             f.write(f"set type {self._type_iter} density {density}\n")
         with open(os.path.join(self._path, filename), "w") as f:
@@ -206,30 +763,6 @@ class Simulation:
             self._timestep = 0.01 * (diameter / 9.8) ** 0.5
 
         return self._type_iter
-
-    def add_atoms(self, atom_type_list: list, atom_list: list, filename: str | None = None):
-        if not isinstance(atom_type_list[0], list): atom_type_list = [atom_type_list]
-        for atom_type in atom_type_list:
-            similar_atoms = [atm for atm in atom_list if atm.type_id == atom_type[0]]
-            coords = similar_atoms[0].coords[0:3]
-            for atm in similar_atoms[1:]: coords = np.vstack((coords, atm.coords[0:3]))
-            self.add_grains(coords, atom_type[1], atom_type[2], filename)
-
-    def apply_node_constraints(self, node_list: list):
-        node_constraints = [np.dot(nd.fixed_dof[0:3], np.array([100, 10, 1])) for nd in node_list]
-        constraint_list = list(set(node_constraints))
-        for con in constraint_list:
-            # List all atoms of nodes with matching fixed dof
-            atom_ids = [nd.atom.id for i_nd, nd in enumerate(node_list) if node_constraints[i_nd] == con]
-
-            # Translate constraint int to velocities
-            (x_vel, y_vel, z_vel) = (None, None, None)
-            if con // 100 % 10 == 1: x_vel = 0
-            if con // 10 % 10 == 1: y_vel = 0
-            if con // 1 % 10 == 1: z_vel = 0
-
-            # Fix set of particles
-            self.move(particles=atom_ids, xvel=x_vel, yvel=y_vel, zvel=z_vel)            
 
     def add_beam(
         self,
@@ -783,9 +1316,6 @@ class Simulation:
 
         return self._type_iter, self._bond_type_iter, self._angle_type_iter
 
-    @deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
-                            current_version="1.0", #__version__
-                            details="Use the add_bond_types and add_bonds functions instead")
     def construct_many_bonds(
         self, tuplets: np.array, stiffness: float, rest_length: float
     ) -> int:
@@ -815,9 +1345,6 @@ class Simulation:
 
         return self._bond_type_iter
 
-    @deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
-                            current_version="1.0", #__version__
-                            details="Use the add_bond_types and add_bonds functions instead")
     def construct_many_angles(self, triplets: np.array, stiffness: float) -> int:
         """
         Add cosine angles between particles.
@@ -843,30 +1370,6 @@ class Simulation:
                 )
 
         return self._angle_type_iter
-
-    def add_bond_types(self, bond_type_list: list):
-        print(f"# Creating {len(bond_type_list)} Bond Types #")
-        with open(os.path.join(self._path, "in.main_file"), "a") as f:
-            for bnd_type in bond_type_list:
-                print_str = f"{bnd_type[1]}_coeff {bnd_type[0]}"
-                for param in bnd_type[2]:
-                    print_str += f" {param}"
-                f.write(print_str + "\n")
-                f.write(f"include {bnd_type[1]}_{bnd_type[0]}.txt\n")
-
-    def add_bonds(self, bond_type_list: list, bond_list: list | bond):
-        if isinstance(bond_list, bond): bond_list = [bond_list]
-
-        print(f"# Creating {len(bond_list)} Bonds #")
-
-        for bond_type in bond_type_list:
-            similar_bonds = [bnd for bnd in bond_list if bnd.type == bond_type[1]]
-            with open(os.path.join(self._path, f"{bond_type[1]}_{bond_type[0]}.txt"), "w") as f:
-                for bnd in similar_bonds:
-                    print_str = f"create_bonds single/{bond_type[1]} {bond_type[0]}"
-                    for i_atm in range(len(bnd.atom_ids)):
-                        print_str += f" {bnd.atom_ids[i_atm]}"
-                    f.write(print_str + "\n")
 
     def turn_on_granular_potential(
         self, type1: int = None, type2: int = None, youngs_modulus: float = None, hardcore_dict: dict = None
