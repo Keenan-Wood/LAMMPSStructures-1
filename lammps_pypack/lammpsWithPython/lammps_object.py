@@ -4,6 +4,10 @@ from typing import List, Union, Tuple
 import numpy as np
 import pandas as pd
 
+from contextlib import chdir
+from mpi4py import MPI
+from lammps import lammps
+
 import deprecation
 from .lammps_structure import *
 
@@ -101,6 +105,8 @@ class Simulation:
             #   The number of possible bonds per particle (100)
             #   The number of types of angles (10000)
             #   The number of possible angles per particle (100)
+            #   The number of types of dihedrals (10000)
+            #   The number of possible dihedrals per particle (100)
             # In this line we have to put something, and if we put too few, lammps will get mad at us. For example if we say we
             # are going to have 30 types of particles, but we insert 31 types if particles, LAMMPS will be like "thats more than we thought!"
             # and your sim will die. However, since we don't know how many we need at the time of the writing of this line,
@@ -1596,6 +1602,16 @@ class Simulation:
             self._have_run = True
 
         pass
+
+    def run_lammps(run_type: str = 'serial') -> None:
+        new_sim = lammps()
+        with chdir(self._path):
+            new_sim.file(os.path.join(self._path, "in.main_file"))
+            if run_type == 'parallel':
+                me = MPI.COMM_WORLD.Get_rank()
+                nprocs = MPI.COMM_WORLD.Get_size()
+                print("Proc %d out of %d procs has" % (me,nprocs), new_sim)
+                MPI.Finalize()
 
     def manually_edit_timestep(self,timestep: float):
         """
