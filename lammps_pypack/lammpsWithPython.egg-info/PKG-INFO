@@ -1,17 +1,21 @@
-Metadata-Version: 1.1
+Metadata-Version: 2.2
 Name: lammpsWithPython
 Version: 0.0.1
 Summary: Python Wrapper for LAMMPS
-Home-page: UNKNOWN
 Author: Arman Guerra
 Author-email: <adguerra@bu.edu>
-License: UNKNOWN
-Description: Use this to create a lammps input file with all of the pieces you want to simulate
 Keywords: python,first package
-Platform: UNKNOWN
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Education
 Classifier: Programming Language :: Python :: 2
 Classifier: Programming Language :: Python :: 3
 Classifier: Operating System :: MacOS :: MacOS X
 Classifier: Operating System :: Microsoft :: Windows
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: keywords
+Dynamic: summary
+
+Use this to create a lammps input file with all of the pieces you want to simulate

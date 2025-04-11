@@ -1,6 +1,7 @@
 setup.py
 lammpsWithPython/__init__.py
 lammpsWithPython/lammps_object.py
+lammpsWithPython/lammps_structure.py
 lammpsWithPython.egg-info/PKG-INFO
 lammpsWithPython.egg-info/SOURCES.txt
 lammpsWithPython.egg-info/dependency_links.txt
