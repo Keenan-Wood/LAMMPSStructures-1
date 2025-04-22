@@ -12,48 +12,58 @@ from ovito.io import import_file
 from ovito.vis import *
 from ovito import dataset
 
-def render_dumps(img_size: tuple = (640, 480), dump_path: str = os.getcwd(), gif_path = None) -> None:
-    '''\
-    This function renders top, front, left, and perspective views of the provided dump file(s) as images (pngs) or animations (gifs)
+def render_dumps(img_size: tuple = (640, 480),dump_path: str = os.getcwd(),orient_name = ['top', 'front', 'left', 'perspective'],gif_path = None) -> None:
     '''
-    
-    if gif_path is None: gif_path = dump_path
+    This function renders the desired views (to chose in ['top', 'front', 'left', 'perspective']) of the provided dump file(s) as images (pngs) or animations (gifs).
+    '''
+
+    if gif_path is None:
+        gif_path = dump_path
 
     # Initialize the ovito viewports with the standard camera directions
-    (vp_top, vp_front, vp_left, vp_per) = (Viewport(), Viewport(), Viewport(), Viewport())
-    vp_top.type = Viewport.Type.Top
-    vp_top.camera_dir = (0, 0, -1)
-    vp_front.type = Viewport.Type.Front
-    vp_front.camera_dir = (0, 1, 0)
-    vp_left.type = Viewport.Type.Left
-    vp_left.camera_dir = (1, 0, 0)
-    vp_per.type = Viewport.Type.Perspective
-    vp_per.camera_dir = (-0.56, 0.56, -0.56)
+    vp_top = Viewport(type=Viewport.Type.Top, camera_dir=(0, 0, -1))
+    vp_front = Viewport(type=Viewport.Type.Front, camera_dir=(0, 1, 0))
+    vp_left = Viewport(type=Viewport.Type.Left, camera_dir=(1, 0, 0))
+    vp_per = Viewport(type=Viewport.Type.Perspective, camera_dir=(-0.56, 0.56, -0.56))
 
-    viewports = [vp_top, vp_front, vp_left, vp_per]
+    # Map orientation names to their viewports
+    orient_map = {
+        'top': vp_top,
+        'front': vp_front,
+        'left': vp_left,
+        'perspective': vp_per
+    }
 
-    # Load all dump file data and add it to the scenee
-    pipeline = import_file(dump_path + 'out*.dump')
+    # Load all dump file data and add it to the scene
+    pipeline = import_file(os.path.join(dump_path, 'out*.dump'))
     pipeline.add_to_scene()
 
-    ## Render image or animation for each view
-    cwd = os.getcwd()
-    orient_name = ['top', 'front', 'left', 'perspective']
-    for i, orient in enumerate(orient_name):
-        viewports[i].zoom_all(size = img_size)
+    # Render image or animation for each requested view
+    for orient in orient_name:
+        vp = orient_map.get(orient)
+        if not vp:
+            print(f"Warning: Unknown orientation '{orient}' — skipping.")
+            continue
+
+        vp.zoom_all(size=img_size)
+
         if pipeline.num_frames == 1:
-            viewports[i].render_image(filename = gif_path + '/ovito_img_' + orient + '.png',
-                                    size = img_size,
-                                    background = (0,0,0), 
-                                    renderer = TachyonRenderer(ambient_occlusion = False, shadows = False))
+            vp.render_image(
+                filename=os.path.join(gif_path, f'ovito_img_{orient}.png'),
+                size=img_size,
+                background=(0, 0, 0),
+                renderer=TachyonRenderer(ambient_occlusion=False, shadows=False)
+            )
         else:
-            viewports[i].render_anim(filename = gif_path + '/ovito_anim_' + orient + '.gif', 
-                                    size = img_size,
-                                    fps = 10, 
-                                    background = (1.0, 1.0, 1.0), 
-                                    renderer = TachyonRenderer(ambient_occlusion = False, shadows = False),
-                                    stop_on_error = True)
-        
+            vp.render_anim(
+                filename=os.path.join(gif_path, f'ovito_anim_{orient}.gif'),
+                size=img_size,
+                fps=10,
+                background=(1.0, 1.0, 1.0),
+                renderer=TachyonRenderer(ambient_occlusion=False, shadows=False),
+                stop_on_error=True
+            )
+
 def stitch_gifs(directory: str, gif_fnames: list, sub_dims: tuple, positions: list, output_fname: str = 'stitched_output.gif') -> None:
     '''\
     Function to combine frames of equal-length gifs to form the frames of the output gif
