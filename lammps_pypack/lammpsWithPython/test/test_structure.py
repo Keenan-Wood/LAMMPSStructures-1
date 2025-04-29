@@ -20,7 +20,7 @@ import lammps_render as lrend
 simname = "test_structure"
 
 n_beams = 5
-d_between_beams = 0.005
+d_between_beams = 0.02
 beam_length = 0.100
 beam_thickness = 0.002
 Np_beam = 100
@@ -32,6 +32,7 @@ E_walls = 10 ** 4
 density = 0.5
 viscosity = 2 * 10 ** -7
 timestep = 1 * 10 ** -7
+dump_timestep = 10 ** -7
 simtime = 1
 #simtime = 0.001
 
@@ -41,41 +42,40 @@ x_rng = 0.5*d_between_beams*(n_beams - 1) * np.array([-1, 1])
 dy = beam_length / (Np_beam - 1)
 
 # Start a simulation with the name simname
-#sim = Simulation(simname, 3, Np_hori*dy + 0.02, 0.01, 0.11)
 sim_path = pathlib.Path(__file__).parent.resolve()
 sim = lsim.Simulation(simname, 3, d_between_beams*n_beams + 0.02, beam_thickness + 0.01, beam_length + 0.01, sim_dir = sim_path)
 # Make the simulationStation hard. We can also do this sim periodically, so this is not required
 sim.add_walls(youngs_modulus = E_walls)
-
-# We're gonna do something tricky, which is we will turn on all granular interactions between all beams, and
-# Then in the loop where we add the beams we will turn off the granular interactions between the beams and themselves
-# If the particles in the beams are granular with themselves, it will mess up the beam mechanics
 sim.turn_on_granular_potential(youngs_modulus = E_walls)
 
-## Test of patterning
+## Define the nodes with coordinates and diameters
+# Here the coordinates of node 1 and 3 will be calculated from the parametric equations we provide the elements
 node_diameter = 0.002
 nodes = [
     ([0, 0, 0], node_diameter),
-    ([0, 0, beam_length], node_diameter),
+    (None, node_diameter),
     ([d_between_beams, 0, 0], node_diameter),
-    ([d_between_beams, 0, beam_length], node_diameter)
+    (None, node_diameter)
     ]
-constraints = [[0, 1,1,1,1,1,1], [2, 1,1,1,1,1,1]]
+constraints = [[1, 1,1,1,1,1,1], [3, 1,1,1,1,1,1]]
 
 (E, rho) = (E_beams, density)
 materials = [['test_material_0', E, rho]]
 xsecs = [[0, beam_thickness]]
 
-r_helix = 0.01
-param_eqs = [lambda t: r_helix*(np.cos(5*2*np.pi*t) - 1),
-             lambda t: r_helix*np.sin(5*2*np.pi*t),
-             lambda t: 8*r_helix*t]
-elements = [[0, 1], [1, 3], [3, 2], [2, 0]]
+# Define the elements with node id pairs
+r_helix = 0.003
+N_turns = 10
+param_eqs = [lambda t: r_helix*(np.cos(N_turns*2*np.pi*t) - 1),
+             lambda t: r_helix*np.sin(N_turns*2*np.pi*t),
+             lambda t: beam_length*t]
+elements = [(0, 1, param_eqs), (2, 3, param_eqs), (0, 2), (1, 3)]
 connections = [
-    [[0, 2, 4], ('dihedral','spherical'), None],
-    [[1, 3, 5], ('dihedral','spherical'), None],
+    ([0, 2, 4], ('dihedral','spherical'), None),
+    ([1, 3, 5], ('dihedral','spherical'), None),
     ]
 
+# Create the structure object
 new_structure = lstruct.Structure(
     node_list = nodes,
     material_list = materials,
@@ -85,46 +85,25 @@ new_structure = lstruct.Structure(
     constraint_list = constraints)
 new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1.png')
 
+# Translate structure to place the origin in the center (after patterning)
 new_structure.translate([-d_between_beams*n_beams/2, 0, -beam_length/2], copy=False)
 new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1_shifted.png')
 
+# Pattern the structure (repeat n_beams - 1 times in x-direction, and join together)
 new_structure = new_structure.pattern_linear(np.array([1,0,0]), n_beams - 1, offset = d_between_beams)
 new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1_patterned.png')
 
-new_structure.discretize(beam_length/Np_beam)
-
-## Old (pre-patterning)
-nodes = [([d_between_beams*x_i - d_between_beams*n_beams/2, 0, -beam_length/2], node_diameter) for x_i in range(n_beams)]
-#nodes += [([], node_diameter) for _ in range(5)]
-nodes += [([d_between_beams*x_i - d_between_beams*n_beams/2, 0, beam_length/2], node_diameter) for x_i in range(n_beams)]
-(E, rho) = (E_beams, density)
-materials = [['test_material_0', E, rho]]
-xsecs = [[0, beam_thickness]]
-r_helix = 0.01
-param_eqs = [lambda t: r_helix*(np.cos(5*2*np.pi*t) - 1),
-             lambda t: r_helix*np.sin(5*2*np.pi*t),
-             lambda t: 8*r_helix*t]
-elements = [[x_i, x_i + 1] for x_i in range(n_beams - 1)]
-#elements += [[x_i, x_i + 5, 'test_material_0', 0, param_eqs] for x_i in range(5)]
-elements += [[x_i, x_i + n_beams] for x_i in range(n_beams)]
-elements += [[x_i + n_beams, x_i + n_beams + 1] for x_i in range(n_beams - 1)]
-connections = [[[x_i, x_i + 1, x_i + 2], ('dihedral','spherical'), None] for x_i in range(n_beams - 2)]
-connections += [[[x_i + n_beams, x_i + n_beams + 1, x_i + n_beams + 2], ('dihedral','spherical'), None] for x_i in range(n_beams - 2)]
-constraints = [[x_i, 1,1,1,0,0,0] for x_i in range(n_beams)]
-new_structure = lstruct.Structure(
-    node_list = nodes,
-    material_list = materials,
-    xsection_list = xsecs,
-    element_list = elements,
-    connection_list = connections,
-    constraint_list = constraints)
-new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1.png')
+# Discretize the structure to generate list of atoms and bonds (and their types)
 (atom_type_list, bond_type_list, atoms, bonds) = new_structure.discretize(beam_length/Np_beam)
 
+# Add node atoms to simulation
 node_atom_types = atom_type_list[0:len(new_structure.nodes)]
 sim.add_atoms(node_atom_types, atoms, "node")
+
+# Add element atoms to simulation
 element_atom_types = atom_type_list[len(new_structure.nodes):]
 sim.add_atoms(element_atom_types, atoms, "element")
+# Turn of granular interaction between atoms belonging to the same element
 for el_atm_type in element_atom_types:
     sim.turn_on_granular_potential(type1 = el_atm_type[0], type2 = el_atm_type[0], youngs_modulus = 0)
 
@@ -192,7 +171,7 @@ sim.move(particles = atoms_to_move, xvel = 0, yvel = 0, zvel = 0.2 * beam_length
 #dirs = np.random.rand(len(beam_positions),1)
 #p1 = sim.perturb(type = [i+1 for i in np.where(dirs>0.5)[0].tolist()],xdir = 1)
 #p2 = sim.perturb(type = [i+1 for i in np.where(dirs<=0.5)[0].tolist()],xdir = -1)
-mid_atom_ids = [new_structure.get_atom_id([i_nd, i_nd + n_beams], 0.5) for i_nd in range(n_beams)]
+mid_atom_ids = [new_structure.get_atom_id([2*i_nd, 2*i_nd + 1], 0.5) for i_nd in range(n_beams)]
 sim.perturb(particles = mid_atom_ids, xdir = 1)
 
 # Add the viscosity, which just helps the simulation from exploding, mimics the normal 
@@ -200,7 +179,7 @@ sim.perturb(particles = mid_atom_ids, xdir = 1)
 sim.add_viscosity(viscosity)
 
 # Make the dump files and run the simulation
-sim.design_dump_files(10 ** -2)
+sim.design_dump_files(dump_timestep)
 sim.run_simulation(simtime, timestep)
 
 # Call lammps to run simulation

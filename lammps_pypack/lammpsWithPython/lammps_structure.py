@@ -293,7 +293,7 @@ class Structure:
         # Tabulate node and element data
         new_structure_nodes.sort(key = lambda nd: nd.id)
         node_list = [(nd.coords, nd.diameter) for nd in new_structure_nodes]
-        element_list = [[el.node_a.id, el.node_b.id, el.material, el.xsec, el.para_eq] for el in new_structure_elements]
+        element_list = [[el.node_a.id, el.node_b.id, el.para_eq, el.material, el.xsec] for el in new_structure_elements]
 
         # Create combined structure
         combined_structure = Structure(
@@ -313,7 +313,7 @@ class Structure:
         for node_data in node_list:
             # Parse node coordinates
             node_coords = node_data[0]
-            if len(node_coords) > 0:
+            if not node_coords is None:
                 node_coords = np.array(node_coords)
                 if np.size(node_coords) < 3:
                     np.append(node_coords, np.zeros(3 - np.size(node_coords)))
@@ -365,19 +365,14 @@ class Structure:
                 self.xsections.append(new_xsection)
                 xsection_ids.append(new_xsection.id)
 
-    def add_elements(self, element_list):
-        if isinstance(element_list, Element): element_list = [element_list]
-        if not isinstance(element_list, list): raise Exception('element_list type error: must be a list or element')
+    def add_elements(self, element_list: list | tuple):
+        if isinstance(element_list, tuple): element_list = [element_list]
         for el in element_list:
             # Get node ids of element to add
-            if isinstance(el, Element):
-                node_a = el.node_a
-                node_b = el.node_b
-            else:
-                if isinstance(el[0], Node): node_a = el[0].id
-                else: node_a = el[0]
-                if isinstance(el[1], Node): node_b = el[1].id
-                else: node_b = el[1]
+            if isinstance(el[0], Node): node_a = el[0].id
+            else: node_a = el[0]
+            if isinstance(el[1], Node): node_b = el[1].id
+            else: node_b = el[1]
 
             # Check if element already exists between specified nodes - create and add if not
             duplicate_element = False
@@ -387,10 +382,7 @@ class Structure:
                     duplicate_element = True
                     break
             if not duplicate_element:
-                if isinstance(el, Element):
-                    new_element = el
-                else:
-                    new_element = Element(*tuple([self] + el))
+                new_element = Element(*tuple([self] + list(el)))
                 self.elements.append(new_element)
 
     def add_node_bonds(self, element_pair: list, bond_style: BondStyle | tuple, bond_parameters: list):
@@ -515,7 +507,7 @@ class Structure:
         # Bond element pairs through nodes (ie. with angle, dihedral, etc. bonds)
         if not self.element_connections is None:
             for el_connection in self.element_connections:
-                self.add_node_bonds(*tuple(el_connection))
+                self.add_node_bonds(*el_connection)
 
         # Build list of atom types (by element)
         max_node_id = max([nd.id for nd in self.nodes])
@@ -718,11 +710,11 @@ class Element:
     def __init__(
         self,
         parent_structure: Structure,
-        node_a: int | Node,
-        node_b: int | Node,
+        node_a: int,
+        node_b: int,
+        para_eq: list | None = None,
         mat: list | Material | str | None = None,
-        xsec: list | XSection | int | None = None,
-        para_eq: list | None = None
+        xsec: list | XSection | int | None = None
         ):
 
         self.parent_structure = parent_structure
@@ -730,18 +722,12 @@ class Element:
         self.bonds = []
 
         # Assign end nodes
-        if isinstance(node_a, int): 
-            matching_node_a = next(filter(lambda nd: nd.id == node_a, parent_structure.nodes), None)
-            if matching_node_a is None: raise Exception('No matching node found for element end a')
-            self.node_a = matching_node_a
-        else: 
-            self.node_a = node_a
-        if isinstance(node_b, int): 
-            matching_node_b = next(filter(lambda nd: nd.id == node_b, parent_structure.nodes), None)
-            if matching_node_b is None: raise Exception('No matching node found for element end b')
-            self.node_b = matching_node_b
-        else:
-            self.node_b = node_b
+        matching_node_a = next(filter(lambda nd: nd.id == node_a, parent_structure.nodes), None)
+        if matching_node_a is None: raise Exception('No matching node found for element end a')
+        self.node_a = matching_node_a
+        matching_node_b = next(filter(lambda nd: nd.id == node_b, parent_structure.nodes), None)
+        if matching_node_b is None: raise Exception('No matching node found for element end b')
+        self.node_b = matching_node_b
 
         # Set parametric equations for element path (if provided) and calculate element length
         if para_eq is None: para_eq = []
@@ -781,10 +767,10 @@ class Element:
 
             # Set node coordinate given equation and other node if not set
             if self.node_a.coords is None and not self.node_b.coords is None:
-                coords = np.array([para_eq[0](1), para_eq[1](1), para_eq[2](1), 0, 0, 0])
+                coords = np.array([para_eq[0](1), para_eq[1](1), para_eq[2](1)])
                 self.node_a.coords = self.node_b.coords - coords
             elif self.node_b.coords is None and not self.node_a.coords is None:
-                coords = np.array([para_eq[0](1), para_eq[1](1), para_eq[2](1), 0, 0, 0])
+                coords = np.array([para_eq[0](1), para_eq[1](1), para_eq[2](1)])
                 self.node_b.coords = self.node_a.coords + coords
 
             # Check all coordinates for mismatching values with parametric function
@@ -795,7 +781,7 @@ class Element:
                     raise Exception(f'Parametric equation f(1)={coord_eq(1)} does not coincide with end node with ID {self.node_b.id}')
             self.para_eq = para_eq
             self.para_linear: bool = False
-        elif len(self.node_a.coords) > 0 and len(self.node_b.coords) > 0:
+        elif not self.node_a.coords is None and not self.node_b.coords is None:
             x_eq = lambda t: t * (self.node_b.coords[0] - self.node_a.coords[0])
             y_eq = lambda t: t * (self.node_b.coords[1] - self.node_a.coords[1])
             z_eq = lambda t: t * (self.node_b.coords[2] - self.node_a.coords[2])
