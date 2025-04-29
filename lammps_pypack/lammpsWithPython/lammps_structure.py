@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 ## bond, structure - Create function to calculate bond parameters (use for add_node_bonds too)
 ## node - remove angular DOF
+## element, structure - remove ability to add by object (instead of id or data)
 ## structure, node, atom - Refactor constraints in a more lammps-friendly format
 ## element, structure - Add ability to offset discretization element lengths due to different node atom diameters
 
@@ -195,6 +196,49 @@ class Structure:
 
     def __add__(self, structure_2):
         if not isinstance(structure_2, Structure): raise Exception('Only structure instances can be combined')
+        
+        # Combine materials
+        new_structure_materials = cp.copy(self.materials)
+        structure_2_materials = cp.copy(structure_2.materials)
+        material_names = [mat.name for mat in new_structure_materials]
+        for new_mat in structure_2_materials:
+            # Add material to list of new structure's materials if its name is not already taken
+            if not new_mat.name in material_names:
+                new_structure_materials.append(mat)
+                material_names.append(mat.name)
+            else:
+                # Verify that materials to merge are identical
+                dup_mat = next(filter(lambda old_mat: old_mat.name == new_mat.name, new_structure_materials), None)
+                if not new_mat.E == dup_mat.E: raise Exception('Young\'s moduli of materials to merge do not match')
+                if not new_mat.rho == dup_mat.rho: raise Exception('Atom densities of materials to merge do not match')
+
+        # Combine xsections
+        new_structure_xsections = cp.copy(self.xsections)
+        structure_2_xsections = cp.copy(structure_2.xsections)
+        xsection_ids = [xsec.id for xsec in new_structure_xsections]
+        change_xsec_ids = []
+        for new_xsec in structure_2_xsections:
+            # Add cross section to list of new structure's cross sections if ID is not already taken
+            if not new_xsec.id in xsection_ids:
+                new_structure_xsections.append(new_xsec)
+                xsection_ids.append(new_xsec.id)
+            else:
+                # Verify that cross sections to merge are identical
+                dup_xsec = next(filter(lambda old_xsec: old_xsec.id == new_xsec.id, new_structure_xsections), None)
+                diameters_match = new_xsec.atom_diameter == dup_xsec.atom_diameter
+                thickness_coeffs_match = new_xsec.thickness_coefficient == dup_xsec.thickness_coefficient
+                stretching_coeffs_match = new_xsec.stretching_coefficient == dup_xsec.stretching_coefficient
+                bending_coeffs_match = new_xsec.bending_coefficient == dup_xsec.bending_coefficient
+                if not diameters_match or not thickness_coeffs_match or not stretching_coeffs_match or not bending_coeffs_match:
+                    change_xsec_ids.append(new_xsec)
+
+        # Reassign xsection ids to new xsections
+        start_id = max(xsection_ids) + 1
+        for i_xsec, xsec_to_change in enumerate(change_xsec_ids):
+            xsec_to_change.id = start_id + i_xsec
+            warnings.warn('XSections with duplicate ID given new ID')
+        
+        # Deepcopy structures to allow for ID reassigning without affecting input structures
         struct_1 = cp.deepcopy(self)
         struct_2 = cp.deepcopy(structure_2)
 
@@ -202,7 +246,7 @@ class Structure:
         new_structure_nodes = cp.copy(struct_1.nodes)
         node_ids = [nd.id for nd in new_structure_nodes]
         change_node_ids = []
-        for new_node in structure_2.nodes:
+        for new_node in struct_2.nodes:
             matching_node = next(filter(lambda test_node: test_node.id == new_node.id, struct_1.nodes), None)
             overlapping_node = next(filter(lambda test_node: compare_lists(test_node.coords, new_node.coords), struct_1.nodes), None)
             if overlapping_node is None:
@@ -223,50 +267,11 @@ class Structure:
         start_id = max(node_ids) + 1
         for i_nd, node_to_change in enumerate(change_node_ids):
             node_to_change.change_id(start_id + i_nd)   
-            warnings.warn('Node with duplicate ID given new ID')          
-
-        # Combine materials
-        new_structure_materials = cp.copy(struct_1.materials)
-        material_names = [mat.name for mat in new_structure_materials]
-        for new_mat in struct_2.materials:
-            # Add material to list of new structure's materials if its name is not already taken
-            if not new_mat.name in material_names:
-                new_structure_materials.append(mat)
-                material_ids.append(mat.name)
-            else:
-                # Verify that materials to merge are identical
-                dup_mat = next(filter(lambda old_mat: old_mat.name == new_mat.name, struct_1.materials), None)
-                if not new_mat.E == dup_mat.E: raise Exception('Young\'s moduli of materials to merge do not match')
-                if not new_mat.rho == dup_mat.rho: raise Exception('Atom densities of materials to merge do not match')
-
-        # Combine xsections
-        new_structure_xsections = cp.copy(struct_1.xsections)
-        xsection_ids = [xsec.id for xsec in new_structure_xsections]
-        change_xsec_ids = []
-        for new_xsec in struct_2.xsections:
-            # Add cross section to list of new structure's cross sections if ID is not already taken
-            if not new_xsec.id in xsection_ids:
-                new_structure_xsections.append(new_xsec)
-                xsection_ids.append(new_xsec.id)
-            else:
-                # Verify that cross sections to merge are identical
-                dup_xsec = next(filter(lambda old_xsec: old_xsec.id == new_xsec.id, new_structure_xsections), None)
-                diameters_match = new_xsec.atom_diameter == dup_xsec.atom_diameter
-                thickness_coeffs_match = new_xsec.thickness_coefficient == dup_xsec.thickness_coefficient
-                stretching_coeffs_match = new_xsec.stretching_coefficient == dup_xsec.stretching_coefficient
-                bending_coeffs_match = new_xsec.bending_coefficient == dup_xsec.bending_coefficient
-                if not diameters_match or not thickness_coeffs_match or not stretching_coeffs_match or not bending_coeffs_match:
-                    change_xsec_ids.append(new_xsec)
-
-        # Reassign xsection ids to new xsections
-        start_id = max(xsection_ids) + 1
-        for i_xsec, xsec_to_change in enumerate(change_xsec_ids):
-            xsec_to_change.id = start_id + i_xsec
-            warnings.warn('XSections with duplicate ID given new ID')  
+            warnings.warn('Node with duplicate ID given new ID')           
 
         # Combine elements
         new_structure_elements = cp.copy(struct_1.elements)
-        for new_el in structure_2.elements:
+        for new_el in struct_2.elements:
             # Check if element already exists between specified nodes
             duplicate_element = False
             for existing_el in new_structure_elements:
@@ -285,11 +290,17 @@ class Structure:
                 for i_eq in range(3):
                     if not new_el.para_eq[i_eq].__code__.co_code == dup_element.para_eq[i_eq].__code__.co_code: raise Exception('Parametric equations of elements to merge do not match')
 
+        # Tabulate node and element data
+        new_structure_nodes.sort(key = lambda nd: nd.id)
+        node_list = [(nd.coords, nd.diameter) for nd in new_structure_nodes]
+        element_list = [[el.node_a.id, el.node_b.id, el.material, el.xsec, el.para_eq] for el in new_structure_elements]
+
+        # Create combined structure
         combined_structure = Structure(
-            node_list = new_structure_nodes,
+            node_list = node_list,
             material_list = new_structure_materials,
             xsection_list = new_structure_xsections,
-            element_list = new_structure_elements
+            element_list = element_list
         )
         return combined_structure
 
@@ -297,27 +308,25 @@ class Structure:
         self = self + structure_2
         return self
 
-    def add_nodes(self, node_list):
-        if isinstance(node_list, Node): node_list = [(node_list)]
-        if not isinstance(node_list, list): raise Exception('node_list type error: must be a list or a node')
-        if not isinstance(node_list[0], Node):
-            if len(node_list[0]) > 1:
-                diameter_list = [nd_dat[1] for nd_dat in node_list]
-            node_list = [nd_dat[0] for nd_dat in node_list]
-        node_ids = [nd.id for nd in self.nodes]
-        for i_nd, nd in enumerate(node_list):
-            if isinstance(nd, Node) and not nd.id in node_ids:
-                self.nodes.append(nd)
-                node_ids.append(nd.id)
-            elif isinstance(nd, list):
-                if len(nd) > 0:
-                    coords = np.array(nd)
-                    if len(coords) < 6: coords = np.append(coords, np.zeros(6 - len(coords)))
-                    new_node = Node(self, coords = coords, diameter = diameter_list[i_nd])
-                else:
-                    new_node = Node(self, diameter = diameter_list[i_nd])
-                self.nodes.append(new_node)
-                node_ids.append(new_node.id)
+    def add_nodes(self, node_list: list | tuple):
+        if isinstance(node_list, tuple): node_list = [node_list]
+        for node_data in node_list:
+            # Parse node coordinates
+            node_coords = node_data[0]
+            if len(node_coords) > 0:
+                node_coords = np.array(node_coords)
+                if np.size(node_coords) < 3:
+                    np.append(node_coords, np.zeros(3 - np.size(node_coords)))
+            
+            # Parse node diameter
+            if len(node_data) == 2:
+                node_diameter = node_data[1]
+            else:
+                node_diameter = 0
+
+            # Create node and add to structure's node list
+            new_node = Node(self, coords = node_coords, diameter = node_diameter)
+            self.nodes.append(new_node)
 
     def add_constraints(self, constraints: list):
         for constraint in constraints:
@@ -391,7 +400,9 @@ class Structure:
             el_b_nodes = [element_pair[1], element_pair[2]]
             element_a = [el for el in self.elements if set(el_a_nodes) == set([el.node_a.id, el.node_b.id])]
             element_b = [el for el in self.elements if set(el_b_nodes) == set([el.node_a.id, el.node_b.id])]
-            if len(element_a) == 0 or len(element_b) == 0: raise Exception('No element exists between specified nodes')
+            if len(element_a) == 0 or len(element_b) == 0:
+                warnings.warn('No element exists between specified nodes - Ignoring connection bond')
+                return
             element_pair = element_a + element_b
         elif len(element_pair) != 2: raise Exception('Only two elements can be bonded at a time')
 
