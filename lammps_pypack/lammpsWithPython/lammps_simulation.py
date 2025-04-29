@@ -152,11 +152,11 @@ class Simulation:
             f.write("special_bonds lj/coul 0 1.0 1.0\n")
             # These are the potentials we will use
             f.write("bond_style harmonic\n")
-            f.write("angle_style cosine\n")
+            f.write("angle_style cosine/shift\n")
             f.write("dihedral_style spherical\n")
             f.write("\n")
             f.write("bond_coeff * 0 0\n")
-            f.write("angle_coeff * 0\n")
+            f.write("angle_coeff * 0 0\n")
             f.write("dihedral_coeff * 1 0 1 0 1 1 90 0 1 90 0\n")
             # Turn on integration
             f.write("fix integration all nve/sphere\n")
@@ -866,21 +866,25 @@ class Simulation:
     @deprecation.deprecated(deprecated_in="1.0", removed_in="2.0",
                             current_version="1.0", #__version__
                             details="Use the add_bond_types and add_bonds functions instead")
-    def construct_many_angles(self, triplets: np.array, stiffness: float) -> int:
+    def construct_many_angles(self, triplets: np.array, stiffness: float, rest_angle: float = 0.0) -> int:
         """
         Add cosine angles between particles.
         Inputs:
         - triplets: An Nx3 np.array where the rows are triplets of particles that you want to make an angle between
         - stiffness: The stiffness of these angles
+        - rest_angle: to have angle bonds that are not straigth
         Outputs:
         - The ids of these angles
         """
         self._angle_type_iter += 1
 
+        # We have to use U_min instead of K, see https://docs.lammps.org/angle_cosine_shift.html
+        U_min = -2 * stiffness
+
         print(f"# Creating {triplets.shape[0]} Angles #")
 
         with open(os.path.join(self._path, "in.main_file"), "a") as f:
-            f.write(f"angle_coeff {self._angle_type_iter} {stiffness}\n")
+            f.write(f"angle_coeff {self._angle_type_iter} {U_min} {rest_angle}\n")
             f.write(f"include angles_{self._angle_type_iter}.txt\n")
         with open(
             os.path.join(self._path, f"angles_{self._angle_type_iter}.txt"), "w"

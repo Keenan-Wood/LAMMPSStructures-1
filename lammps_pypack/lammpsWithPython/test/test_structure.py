@@ -1,24 +1,25 @@
-"""\
-This script provides an example of using lammpsWithPython and Ovito (with python)
- - Based on mushroom example found here: https://github.com/adguerra/LAMMPSStructures/blob/main/examples/mushroom/mushroom.py
-"""
-
 import os
+import pathlib
+import sys
+import inspect
 import subprocess
 import numpy as np
 import pandas as pd
 
 from mpi4py import MPI
 from lammps import lammps
-from lammpsWithPython.lammps_object import *
 
-from lammpsWithPython.lammps_structure import *
-import runLammps as rL
-import ovitoView as ov
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
 
-simname = "simExample_4"
+import lammps_structure as lstruct
+import lammps_simulation as lsim
+import lammps_render as lrend
 
-n_beams = 2
+simname = "test_structure"
+
+n_beams = 5
 d_between_beams = 0.005
 beam_length = 0.100
 beam_thickness = 0.002
@@ -31,8 +32,8 @@ E_walls = 10 ** 4
 density = 0.5
 viscosity = 2 * 10 ** -7
 timestep = 1 * 10 ** -7
-#simtime = 1
-simtime = 0.1
+simtime = 1
+#simtime = 0.001
 
 Np_between = int(Np_beam / beam_length * d_between_beams) - 1
 Np_hori = 2*Np_side + Np_between + 2
@@ -41,7 +42,8 @@ dy = beam_length / (Np_beam - 1)
 
 # Start a simulation with the name simname
 #sim = Simulation(simname, 3, Np_hori*dy + 0.02, 0.01, 0.11)
-sim = Simulation(simname, 3, 10, 0.5, 1)
+sim_path = pathlib.Path(__file__).parent.resolve()
+sim = lsim.Simulation(simname, 3, d_between_beams*n_beams + 0.02, beam_thickness + 0.01, beam_length + 0.01, sim_dir = sim_path)
 # Make the simulationStation hard. We can also do this sim periodically, so this is not required
 sim.add_walls(youngs_modulus = E_walls)
 
@@ -50,31 +52,68 @@ sim.add_walls(youngs_modulus = E_walls)
 # If the particles in the beams are granular with themselves, it will mess up the beam mechanics
 sim.turn_on_granular_potential(youngs_modulus = E_walls)
 
-
-nodes = [[0.1*x_i, 0, 0] for x_i in range(5)] + [[] for _ in range(5)]
-(E, rho) = (0.96 * 10**6, 0.5)
+## Test of patterning
+node_diameter = 0.002
+nodes = [
+    ([0, 0, 0], node_diameter),
+    ([0, 0, beam_length], node_diameter),
+    ([d_between_beams, 0, 0], node_diameter),
+    ([d_between_beams, 0, beam_length], node_diameter)
+    ]
+(E, rho) = (E_beams, density)
 materials = [['test_material_0', E, rho]]
-beam_thickness = 0.002
+xsecs = [[0, beam_thickness]]
+elements = [[0, 1], [1, 3], [3, 2], [2, 0]]
+constraints = [[0, 1,1,1,1,1,1], [2, 1,1,1,1,1,1]]
+new_structure = lstruct.Structure(
+    node_list = nodes,
+    material_list = materials,
+    xsection_list = xsecs,
+    element_list = elements)
+new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1.png')
+
+new_structure.translate([-d_between_beams*n_beams/2, 0, -beam_length/2], copy=False)
+new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1_shifted.png')
+
+new_structure.pattern_linear(np.array([1,0,0]), n_beams - 1, offset = d_between_beams)
+new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1_patterned.png')
+
+## Old (pre-patterning)
+nodes = [([d_between_beams*x_i - d_between_beams*n_beams/2, 0, -beam_length/2], node_diameter) for x_i in range(n_beams)]
+#nodes += [([], node_diameter) for _ in range(5)]
+nodes += [([d_between_beams*x_i - d_between_beams*n_beams/2, 0, beam_length/2], node_diameter) for x_i in range(n_beams)]
+(E, rho) = (E_beams, density)
+materials = [['test_material_0', E, rho]]
 xsecs = [[0, beam_thickness]]
 r_helix = 0.01
 param_eqs = [lambda t: r_helix*(np.cos(5*2*np.pi*t) - 1),
              lambda t: r_helix*np.sin(5*2*np.pi*t),
-             lambda t: 4*r_helix*t]
-elements = [[x_i, x_i + 1] for x_i in range(4)]
-elements += [[x_i, x_i + 5, 'test_material_0', 0, param_eqs] for x_i in range(5)]
-elements += [[x_i, x_i + 1] for x_i in range(5, 9)]
-connections = [[[0, 1, 2], 'dihedral', None], [[5, 6, 7], 'dihedral', None]]
-constraints = [[0, 1,1,1,1,1,1], [4, 1,1,1,1,1,1]]
-new_frame = frame(
-    nodes, material_list = materials,
+             lambda t: 8*r_helix*t]
+elements = [[x_i, x_i + 1] for x_i in range(n_beams - 1)]
+#elements += [[x_i, x_i + 5, 'test_material_0', 0, param_eqs] for x_i in range(5)]
+elements += [[x_i, x_i + n_beams] for x_i in range(n_beams)]
+elements += [[x_i + n_beams, x_i + n_beams + 1] for x_i in range(n_beams - 1)]
+connections = [[[x_i, x_i + 1, x_i + 2], ('dihedral','spherical'), None] for x_i in range(n_beams - 2)]
+connections += [[[x_i + n_beams, x_i + n_beams + 1, x_i + n_beams + 2], ('dihedral','spherical'), None] for x_i in range(n_beams - 2)]
+constraints = [[x_i, 1,1,1,0,0,0] for x_i in range(n_beams)]
+new_structure = lstruct.Structure(
+    node_list = nodes,
+    material_list = materials,
     xsection_list = xsecs,
     element_list = elements,
-    element_connections = connections,
+    connection_list = connections,
     constraint_list = constraints)
-(atom_type_list, bond_type_list, atoms, bonds) = new_frame.discretize(0.02)
+new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1.png')
+(atom_type_list, bond_type_list, atoms, bonds) = new_structure.discretize(beam_length/Np_beam)
 
-sim.add_atoms(atom_type_list, atoms, "structure_1.txt")
-sim.apply_node_constraints(new_frame.nodes)
+node_atom_types = atom_type_list[0:len(new_structure.nodes)]
+sim.add_atoms(node_atom_types, atoms, "node")
+element_atom_types = atom_type_list[len(new_structure.nodes):]
+sim.add_atoms(element_atom_types, atoms, "element")
+for el_atm_type in element_atom_types:
+    sim.turn_on_granular_potential(type1 = el_atm_type[0], type2 = el_atm_type[0], youngs_modulus = 0)
+
+sim.apply_node_constraints(new_structure.nodes)
 sim.add_bond_types(bond_type_list)
 sim.add_bonds(bond_type_list, bonds)
 sim.turn_on_granular_potential(youngs_modulus = 0)
@@ -127,7 +166,8 @@ sim.turn_on_granular_potential(youngs_modulus = 0)
 # Actuate downward
 #center_point = [int(n_beams*Np_beam + Np_hori + Np_hori/2)]
 #sim.move(particles = center_point, xvel = 0, yvel = 0, zvel = -squish_factor * beam_length / simtime)
-sim.move(particles = new_frame.nodes[6].atom.id, xvel = 0, yvel = 0, zvel = - 2 * r_helix / simtime)
+atoms_to_move = [new_structure.nodes[i_nd].atom.id for i_nd in range(n_beams, 2*n_beams)]
+sim.move(particles = atoms_to_move, xvel = 0, yvel = 0, zvel = 0.2 * beam_length / simtime)
 
 # Actuate rightward
 #mid_point = [int(Np_beam/2)]
@@ -137,29 +177,24 @@ sim.move(particles = new_frame.nodes[6].atom.id, xvel = 0, yvel = 0, zvel = - 2 
 #dirs = np.random.rand(len(beam_positions),1)
 #p1 = sim.perturb(type = [i+1 for i in np.where(dirs>0.5)[0].tolist()],xdir = 1)
 #p2 = sim.perturb(type = [i+1 for i in np.where(dirs<=0.5)[0].tolist()],xdir = -1)
+mid_atom_ids = [new_structure.get_atom_id([i_nd, i_nd + n_beams], 0.5) for i_nd in range(n_beams)]
+sim.perturb(particles = mid_atom_ids, xdir = 1)
 
 # Add the viscosity, which just helps the simulation from exploding, mimics the normal 
 # damping of air and slight viscoelasticity which we live in but don't appreciate
 sim.add_viscosity(viscosity)
 
 # Make the dump files and run the simulation
-sim.design_dump_files(0.01)
+sim.design_dump_files(10 ** -2)
 sim.run_simulation(simtime, timestep)
 
 # Call lammps to run simulation
-sim_path = os.getcwd() + "/" + simname + "/"
-sim_type = "serial"
-rL.run_lammps(sim_type, sim_path)
-#try:
-#    subprocess.check_call(["mpirun", "-np", str(os.environ['NSLOTS']), "python3", "src/runLammps.py", "\""+sim_type+"\"", "\""+sim_path+"\""])
-#except subprocess.CalledProcessError as e:
-#    print(e)
-#subprocess.call(cmd_1 + cmd_2, shell=True)
+lsim.run_lammps(sim)
 
 # Render dump files with Ovito
 img_size = (640, 480)
-ov.render_dumps(img_size, sim_path)
+lrend.render_dumps(img_size, str(sim_path) + f'/{simname}', orient_name=['front'])
 
 # Stitch gifs into one composite gif
-gif_fnames = ['ovito_anim_front.gif', 'ovito_anim_perspective.gif']
-ov.stitch_gifs(sim_path, gif_fnames, (1,2), [0,1])
+#gif_fnames = ['ovito_anim_front.gif', 'ovito_anim_perspective.gif']
+#lrend.stitch_gifs(str(sim_path) + f'/{simname}', gif_fnames, (1,2), [0,1])

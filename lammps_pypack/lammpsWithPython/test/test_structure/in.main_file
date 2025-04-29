@@ -1,0 +1,31 @@
+atom_style hybrid molecular sphere
+units si
+processors	* * 1
+comm_modify vel yes
+comm_modify cutoff 0.01
+
+region simulationStation block -0.0225 0.0225 -0.006 0.006 -0.055 0.055
+create_box 100 simulationStation bond/types 100000 extra/bond/per/atom 100 angle/types 10000 extra/angle/per/atom 100 dihedral/types 1000 extra/dihedral/per/atom 100
+change_box	all boundary f f f
+
+pair_style hybrid/overlay granular lj/cut 0
+pair_coeff  * * granular hertz/material 0 0 0 tangential linear_nohistory 0 0
+pair_coeff  * * lj/cut 0 0 0
+
+special_bonds lj/coul 0 1.0 1.0
+bond_style harmonic
+angle_style cosine/shift
+dihedral_style spherical
+
+bond_coeff * 0 0
+angle_coeff * 0 0
+dihedral_coeff * 1 0 1 0 1 1 90 0 1 90 0
+fix integration all nve/sphere
+neigh_modify page 500000 one 50000
+
+
+### Here we will begin to include particles ###
+
+
+fix fix_walls_1 all wall/gran/region granular hertz/material 10000 0.25 0.25 tangential linear_nohistory 0 0 region simulationStation
+pair_coeff * * granular hertz/material 10000 0 0.5 tangential linear_nohistory 0 0

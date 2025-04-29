@@ -1,0 +1,4 @@
+create_atoms 8 single -0.004 0.0 0.05
+create_atoms 8 single -0.003 0.0 0.05
+create_atoms 8 single -0.0019999999999999996 0.0 0.05
+create_atoms 8 single -0.001 0.0 0.05

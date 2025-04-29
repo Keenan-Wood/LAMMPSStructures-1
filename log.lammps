@@ -1,0 +1,3678 @@
+LAMMPS (29 Aug 2024 - Update 1)
+  using 1 OpenMP thread(s) per MPI task
+atom_style hybrid molecular sphere
+WARNING: Atom style hybrid defines both, per-type and per-atom masses; both must be set, but only per-atom masses will be used (src/src/atom_vec_hybrid.cpp:132)
+units si
+processors	* * 1
+comm_modify vel yes
+comm_modify cutoff 0.01
+
+region simulationStation block -0.015 0.015 -0.006 0.006 -0.055 0.055
+create_box 100 simulationStation bond/types 100000 extra/bond/per/atom 100 angle/types 10000 extra/angle/per/atom 100 dihedral/types 1000 extra/dihedral/per/atom 100
+Created orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  1 by 1 by 1 MPI processor grid
+change_box	all boundary f f f
+Changing box ...
+
+pair_style hybrid/overlay granular lj/cut 0
+pair_coeff  * * granular hertz/material 0 0 0 tangential linear_nohistory 0 0
+pair_coeff  * * lj/cut 0 0 0
+
+special_bonds lj/coul 0 1.0 1.0
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     0 = max # of 1-2 neighbors
+     1 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+bond_style harmonic
+angle_style cosine
+dihedral_style spherical
+
+bond_coeff * 0 0
+angle_coeff * 0
+dihedral_coeff * 1 0 1 0 1 1 90 0 1 90 0
+fix integration all nve/sphere
+neigh_modify page 500000 one 50000
+
+
+### Here we will begin to include particles ###
+
+
+fix fix_walls_1 all wall/gran/region granular hertz/material 10000 0.25 0.25 tangential linear_nohistory 0 0 region simulationStation
+pair_coeff * * granular hertz/material 10000 0 0.5 tangential linear_nohistory 0 0
+
+include node_1.txt
+create_atoms 1 single -0.005 0.0 -0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+set type 1 diameter 0.002
+Setting atom values ...
+  1 settings made for diameter
+set type 1 density 0.5
+Setting atom values ...
+  1 settings made for density
+
+include node_2.txt
+create_atoms 2 single 0.0 0.0 -0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.002 seconds
+set type 2 diameter 0.002
+Setting atom values ...
+  1 settings made for diameter
+set type 2 density 0.5
+Setting atom values ...
+  1 settings made for density
+
+include node_3.txt
+create_atoms 3 single -0.005 0.0 0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+set type 3 diameter 0.002
+Setting atom values ...
+  1 settings made for diameter
+set type 3 density 0.5
+Setting atom values ...
+  1 settings made for density
+
+include node_4.txt
+create_atoms 4 single 0.0 0.0 0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+set type 4 diameter 0.002
+Setting atom values ...
+  1 settings made for diameter
+set type 4 density 0.5
+Setting atom values ...
+  1 settings made for density
+
+include element_5.txt
+create_atoms 5 single -0.004 0.0 -0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 5 single -0.003 0.0 -0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 5 single -0.0019999999999999996 0.0 -0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 5 single -0.001 0.0 -0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+set type 5 diameter 0.002
+Setting atom values ...
+  4 settings made for diameter
+set type 5 density 0.5
+Setting atom values ...
+  4 settings made for density
+
+include element_6.txt
+create_atoms 6 single -0.005 0.0 -0.049
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.048
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.047
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.046
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.045
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.044000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.043000000000000003
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.042
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.041
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.04
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.039
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.038000000000000006
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.037000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.036000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.035
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.034
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.033
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.032
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.031
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.03
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.029
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.028
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.027
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.026000000000000002
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.025
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.024
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.023
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.022
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.021000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.020000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.019000000000000003
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.018000000000000002
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.017
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.016
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.015
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.014000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.013000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.011999999999999997
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.010999999999999996
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.009999999999999995
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.008999999999999994
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.008
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.006999999999999999
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.005999999999999998
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.0049999999999999975
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.003999999999999997
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.0029999999999999957
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.0020000000000000018
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 -0.0010000000000000009
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.0
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.0010000000000000009
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.0020000000000000018
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.0030000000000000027
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.0040000000000000036
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.0050000000000000044
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.006000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.007000000000000006
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.007999999999999993
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.008999999999999994
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.009999999999999995
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.010999999999999996
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.011999999999999997
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.012999999999999998
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.013999999999999999
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.015
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.016
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.017
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.018000000000000002
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.019000000000000003
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.020000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.02099999999999999
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.021999999999999992
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.022999999999999993
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.023999999999999994
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.02500000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.02600000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.02700000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.02800000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.029000000000000012
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.030000000000000013
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.031000000000000014
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.032000000000000015
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.033000000000000015
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.034
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.035
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.036000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.037000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.038000000000000006
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.03900000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.04000000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.04100000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.04200000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.04300000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.04400000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.04500000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.046
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.047
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.048
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 6 single -0.005 0.0 0.049
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+set type 6 diameter 0.002
+Setting atom values ...
+  99 settings made for diameter
+set type 6 density 0.5
+Setting atom values ...
+  99 settings made for density
+
+include element_7.txt
+create_atoms 7 single 0.0 0.0 -0.049
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.048
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.047
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.046
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.045
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.044000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.043000000000000003
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.042
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.041
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.04
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.039
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.038000000000000006
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.037000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.036000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.035
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.034
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.033
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.032
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.031
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.03
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.029
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.028
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.027
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.026000000000000002
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.025
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.024
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.023
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.022
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.021000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.020000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.019000000000000003
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.018000000000000002
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.017
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.016
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.015
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.014000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.013000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.011999999999999997
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.010999999999999996
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.009999999999999995
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.008999999999999994
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.008
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.006999999999999999
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.005999999999999998
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.0049999999999999975
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.003999999999999997
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.0029999999999999957
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.0020000000000000018
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 -0.0010000000000000009
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.0
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.0010000000000000009
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.0020000000000000018
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.0030000000000000027
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.0040000000000000036
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.0050000000000000044
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.006000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.007000000000000006
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.007999999999999993
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.008999999999999994
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.009999999999999995
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.010999999999999996
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.011999999999999997
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.012999999999999998
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.013999999999999999
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.015
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.016
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.017
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.018000000000000002
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.019000000000000003
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.020000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.02099999999999999
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.021999999999999992
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.022999999999999993
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.023999999999999994
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.02500000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.02600000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.02700000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.02800000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.029000000000000012
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.030000000000000013
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.031000000000000014
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.032000000000000015
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.033000000000000015
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.034
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.035
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.036000000000000004
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.037000000000000005
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.038000000000000006
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.03900000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.04000000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.04100000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.04200000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.04300000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.04400000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.04500000000000001
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.046
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.047
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.048
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 7 single 0.0 0.0 0.049
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+set type 7 diameter 0.002
+Setting atom values ...
+  99 settings made for diameter
+set type 7 density 0.5
+Setting atom values ...
+  99 settings made for density
+
+include element_8.txt
+create_atoms 8 single -0.004 0.0 0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 8 single -0.003 0.0 0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 8 single -0.0019999999999999996 0.0 0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+create_atoms 8 single -0.001 0.0 0.05
+Created 1 atoms
+  using lattice units in orthogonal box = (-0.015 -0.006 -0.055) to (0.015 0.006 0.055)
+  create_atoms CPU = 0.000 seconds
+set type 8 diameter 0.002
+Setting atom values ...
+  4 settings made for diameter
+set type 8 density 0.5
+Setting atom values ...
+  4 settings made for density
+pair_coeff 5 5 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 6 6 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 7 7 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 8 8 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+group group_move_1 id 3 4
+2 atoms in group group_move_1
+fix fix_move_1 group_move_1 move linear NULL NULL NULL
+
+group group_move_2 id 1 2
+2 atoms in group group_move_2
+fix fix_move_2 group_move_2 move linear 0 0 0
+bond_coeff 1 1920.0 0.001
+include bond_1.txt
+create_bonds single/bond 1 5 6
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     1 = max # of 1-2 neighbors
+     1 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 6 7
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 7 8
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 1 5
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 8 2
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 9 10
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 10 11
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 11 12
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 12 13
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 13 14
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 14 15
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 15 16
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 16 17
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 17 18
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 18 19
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 19 20
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 20 21
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 21 22
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 22 23
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 23 24
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 24 25
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 25 26
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 26 27
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 27 28
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 28 29
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 29 30
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 30 31
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 31 32
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 32 33
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 33 34
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 34 35
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 35 36
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 36 37
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 37 38
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 38 39
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 39 40
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 40 41
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.001 seconds
+create_bonds single/bond 1 41 42
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 42 43
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 43 44
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 44 45
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 45 46
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 46 47
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 47 48
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 48 49
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 49 50
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 50 51
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 51 52
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 52 53
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 53 54
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 54 55
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 55 56
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 56 57
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 57 58
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 58 59
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 59 60
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 60 61
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 61 62
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 62 63
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 63 64
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 64 65
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 65 66
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 66 67
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 67 68
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 68 69
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 69 70
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 70 71
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 71 72
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 72 73
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 73 74
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 74 75
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 75 76
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 76 77
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 77 78
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 78 79
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 79 80
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 80 81
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 81 82
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 82 83
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 83 84
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 84 85
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 85 86
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 86 87
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 87 88
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 88 89
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 89 90
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 90 91
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 91 92
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 92 93
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 93 94
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 94 95
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 95 96
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 96 97
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 97 98
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 98 99
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 99 100
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 100 101
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 101 102
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 102 103
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 103 104
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 104 105
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 105 106
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 106 107
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 1 9
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 107 3
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 108 109
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 109 110
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 110 111
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 111 112
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 112 113
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 113 114
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 114 115
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 115 116
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 116 117
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 117 118
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 118 119
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 119 120
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 120 121
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 121 122
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 122 123
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 123 124
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 124 125
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 125 126
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 126 127
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 127 128
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 128 129
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 129 130
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 130 131
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 131 132
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 132 133
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 133 134
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 134 135
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 135 136
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 136 137
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 137 138
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 138 139
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 139 140
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 140 141
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 141 142
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 142 143
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 143 144
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 144 145
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 145 146
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 146 147
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 147 148
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 148 149
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 149 150
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 150 151
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 151 152
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 152 153
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 153 154
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 154 155
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 155 156
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 156 157
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 157 158
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 158 159
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 159 160
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 160 161
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 161 162
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 162 163
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 163 164
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 164 165
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 165 166
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 166 167
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 167 168
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 168 169
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 169 170
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 170 171
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 171 172
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 172 173
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 173 174
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 174 175
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 175 176
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 176 177
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 177 178
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 178 179
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 179 180
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 180 181
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 181 182
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 182 183
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 183 184
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 184 185
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 185 186
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 186 187
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 187 188
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 188 189
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 189 190
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 190 191
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 191 192
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 192 193
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 193 194
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 194 195
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 195 196
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 196 197
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 197 198
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 198 199
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 199 200
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 200 201
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 201 202
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 202 203
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 203 204
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 204 205
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 205 206
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 2 108
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 206 4
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 207 208
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 208 209
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 209 210
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 3 207
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/bond 1 210 4
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+dihedral_coeff 2 3 0.0 1 0.0 1 1 90 0 1 90 0 0.00128 0 0 0 1 0.0 1 0 0 0 0.00128 0 0 0 0 0 0 1 0.0 1
+include dihedral_2.txt
+create_bonds single/dihedral 2 1 5 6 7
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 6 7 8 2
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 1 9 10 11
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 10 11 12 13
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 11 12 13 14
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 12 13 14 15
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 13 14 15 16
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 14 15 16 17
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 15 16 17 18
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 16 17 18 19
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 17 18 19 20
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 18 19 20 21
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 19 20 21 22
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 20 21 22 23
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 21 22 23 24
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 22 23 24 25
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 23 24 25 26
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 24 25 26 27
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 25 26 27 28
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 26 27 28 29
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 27 28 29 30
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 28 29 30 31
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 29 30 31 32
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 30 31 32 33
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 31 32 33 34
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 32 33 34 35
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 33 34 35 36
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 34 35 36 37
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 35 36 37 38
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 36 37 38 39
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 37 38 39 40
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 38 39 40 41
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 39 40 41 42
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 40 41 42 43
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 41 42 43 44
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 42 43 44 45
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 43 44 45 46
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 44 45 46 47
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 45 46 47 48
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 46 47 48 49
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 47 48 49 50
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 48 49 50 51
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 49 50 51 52
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 50 51 52 53
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 51 52 53 54
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 52 53 54 55
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 53 54 55 56
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 54 55 56 57
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 55 56 57 58
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 56 57 58 59
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 57 58 59 60
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 58 59 60 61
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 59 60 61 62
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 60 61 62 63
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 61 62 63 64
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 62 63 64 65
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 63 64 65 66
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 64 65 66 67
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 65 66 67 68
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 66 67 68 69
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 67 68 69 70
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 68 69 70 71
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 69 70 71 72
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 70 71 72 73
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 71 72 73 74
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 72 73 74 75
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 73 74 75 76
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 74 75 76 77
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 75 76 77 78
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 76 77 78 79
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 77 78 79 80
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 78 79 80 81
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 79 80 81 82
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 80 81 82 83
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 81 82 83 84
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 82 83 84 85
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 83 84 85 86
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 84 85 86 87
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 85 86 87 88
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 86 87 88 89
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 87 88 89 90
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 88 89 90 91
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 89 90 91 92
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 90 91 92 93
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 91 92 93 94
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 92 93 94 95
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 93 94 95 96
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 94 95 96 97
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 95 96 97 98
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 96 97 98 99
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 97 98 99 100
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 98 99 100 101
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 99 100 101 102
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 100 101 102 103
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 101 102 103 104
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 102 103 104 105
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 103 104 105 106
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 104 105 106 107
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 105 106 107 3
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 2 108 109 110
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 109 110 111 112
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 110 111 112 113
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 111 112 113 114
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 112 113 114 115
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 113 114 115 116
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 114 115 116 117
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 115 116 117 118
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 116 117 118 119
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 117 118 119 120
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 118 119 120 121
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 119 120 121 122
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 120 121 122 123
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 121 122 123 124
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 122 123 124 125
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 123 124 125 126
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 124 125 126 127
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 125 126 127 128
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 126 127 128 129
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 127 128 129 130
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 128 129 130 131
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 129 130 131 132
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 130 131 132 133
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 131 132 133 134
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 132 133 134 135
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 133 134 135 136
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 134 135 136 137
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 135 136 137 138
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 136 137 138 139
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 137 138 139 140
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 138 139 140 141
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 139 140 141 142
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 140 141 142 143
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 141 142 143 144
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 142 143 144 145
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 143 144 145 146
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 144 145 146 147
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 145 146 147 148
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 146 147 148 149
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 147 148 149 150
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 148 149 150 151
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 149 150 151 152
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 150 151 152 153
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 151 152 153 154
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 152 153 154 155
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 153 154 155 156
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 154 155 156 157
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 155 156 157 158
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 156 157 158 159
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 157 158 159 160
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 158 159 160 161
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 159 160 161 162
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 160 161 162 163
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 161 162 163 164
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 162 163 164 165
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 163 164 165 166
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 164 165 166 167
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 165 166 167 168
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 166 167 168 169
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 167 168 169 170
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 168 169 170 171
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 169 170 171 172
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 170 171 172 173
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 171 172 173 174
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 172 173 174 175
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 173 174 175 176
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 174 175 176 177
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 175 176 177 178
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 176 177 178 179
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 177 178 179 180
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 178 179 180 181
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 179 180 181 182
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 180 181 182 183
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 181 182 183 184
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 182 183 184 185
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 183 184 185 186
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 184 185 186 187
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 185 186 187 188
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+create_bonds single/dihedral 2 186 187 188 189
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        1        1       
+  special bond factors coul:  0        1        1       
+     2 = max # of 1-2 neighbors
+  
