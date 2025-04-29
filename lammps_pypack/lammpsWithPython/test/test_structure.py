@@ -60,23 +60,38 @@ nodes = [
     ([d_between_beams, 0, 0], node_diameter),
     ([d_between_beams, 0, beam_length], node_diameter)
     ]
+constraints = [[0, 1,1,1,1,1,1], [2, 1,1,1,1,1,1]]
+
 (E, rho) = (E_beams, density)
 materials = [['test_material_0', E, rho]]
 xsecs = [[0, beam_thickness]]
+
+r_helix = 0.01
+param_eqs = [lambda t: r_helix*(np.cos(5*2*np.pi*t) - 1),
+             lambda t: r_helix*np.sin(5*2*np.pi*t),
+             lambda t: 8*r_helix*t]
 elements = [[0, 1], [1, 3], [3, 2], [2, 0]]
-constraints = [[0, 1,1,1,1,1,1], [2, 1,1,1,1,1,1]]
+connections = [
+    [[0, 2, 4], ('dihedral','spherical'), None],
+    [[1, 3, 5], ('dihedral','spherical'), None],
+    ]
+
 new_structure = lstruct.Structure(
     node_list = nodes,
     material_list = materials,
     xsection_list = xsecs,
-    element_list = elements)
+    element_list = elements,
+    connection_list = connections,
+    constraint_list = constraints)
 new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1.png')
 
 new_structure.translate([-d_between_beams*n_beams/2, 0, -beam_length/2], copy=False)
 new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1_shifted.png')
 
-new_structure.pattern_linear(np.array([1,0,0]), n_beams - 1, offset = d_between_beams)
+new_structure = new_structure.pattern_linear(np.array([1,0,0]), n_beams - 1, offset = d_between_beams)
 new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1_patterned.png')
+
+new_structure.discretize(beam_length/Np_beam)
 
 ## Old (pre-patterning)
 nodes = [([d_between_beams*x_i - d_between_beams*n_beams/2, 0, -beam_length/2], node_diameter) for x_i in range(n_beams)]
