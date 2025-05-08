@@ -12,6 +12,9 @@ from lammps import lammps
 import deprecation
 import lammps_structure
 
+# General TODO
+## add_bonds, add_bond_types | Reassign bond.type_id to new bond type IDs (make a bond_type object)
+
 class Simulation:
 
     def __init__(
@@ -68,6 +71,8 @@ class Simulation:
                 "density",
             ]
         )
+        self.bond_type_list = []
+        self.bonds = []
         self._num_sets_of_grains = 0
         self._num_beams = 0
         self._num_loops = 0
@@ -91,6 +96,18 @@ class Simulation:
         self._path = os.path.join(sim_dir, self._simulation_name)
         if not os.path.exists(self._path):
             os.mkdir(self._path)
+        struct_path = os.path.join(self._path, 'structure')
+        if not os.path.exists(struct_path):
+            os.mkdir(struct_path)
+        dump_path = os.path.join(self._path, 'raw')
+        if not os.path.exists(dump_path):
+            os.mkdir(dump_path)
+#        else:
+#            try:
+#                dump_files = os.path.join(dump_path, 'out*.dump')
+#                os.remove(dump_files)
+#            except OSError:
+#                pass
         with open(os.path.join(self._path, "in.main_file"), "w") as f:
             # Atom style: angle, for bending and stretching rigidity, and sphere, for granular interactions
             f.write("atom_style hybrid molecular sphere\n") # Originally (pre 4/10/25) hybrid angle sphere
@@ -209,10 +226,10 @@ class Simulation:
         self._particles = pd.concat([self._particles, new_particles], axis=0)
         # Put the particles into the simulation
         with open(os.path.join(self._path, "in.main_file"), "a") as f:
-            f.write(f"\ninclude {filename}\n")
+            f.write(f"\ninclude structure/{filename}\n")
             f.write(f"set type {self._type_iter} diameter {diameter}\n")
             f.write(f"set type {self._type_iter} density {density}\n")
-        with open(os.path.join(self._path, filename), "w") as f:
+        with open(os.path.join(self._path, 'structure/' + filename), "w") as f:
             for i in range(coords.shape[0]):
                 f.write(
                     f"create_atoms {self._type_iter} single {coords[i][0]} {coords[i][1]} {coords[i][2]}\n"
@@ -226,15 +243,35 @@ class Simulation:
 
         return self._type_iter
 
-    def add_atoms(self, atom_type_list: list | tuple, atom_list: list, filename: str | None = None):
+    def add_atoms(self, *, structure = None, atom_type_list: list | tuple | None = None, atom_list: list | None = None, filename: str | None = None):
+        if atom_type_list is None: atom_type_list = []
+        if atom_list is None: atom_list = []
+        if not structure is None:
+            structure_atom_list = structure.atoms
+            for object_type in ['node', 'element']:
+                if object_type == 'node':
+                    structure_atom_type_list = structure.atom_type_list[:len(structure.nodes)]
+                else:
+                    structure_atom_type_list = structure.atom_type_list[len(structure.nodes):]
+                for atom_type in structure_atom_type_list:
+                    similar_atoms = [atm for atm in structure_atom_list if atm.type_id == atom_type[0]]
+                    coords = similar_atoms[0].coords[:]
+                    for atm in similar_atoms[1:]: coords = np.vstack((coords, atm.coords[:]))
+                    self.add_grains(coords, atom_type[1], atom_type[2], f'{object_type}_{atom_type[0]}.txt')
+                    # Turn off granular potential between atoms of the same element
+                    if object_type == 'element':
+                        self.turn_on_granular_potential(type1 = atom_type[0], type2 = atom_type[0], youngs_modulus = 0)
+            
         # If only one atom type is provided (as a tuple), add to a list for looping
         if isinstance(atom_type_list, tuple): atom_type_list = [atom_type_list]
         if filename is None: filename = 'grains'
         for atom_type in atom_type_list:
             similar_atoms = [atm for atm in atom_list if atm.type_id == atom_type[0]]
-            coords = similar_atoms[0].coords[0:3]
-            for atm in similar_atoms[1:]: coords = np.vstack((coords, atm.coords[0:3]))
+            coords = similar_atoms[0].coords[:]
+            for atm in similar_atoms[1:]: coords = np.vstack((coords, atm.coords[:]))
             self.add_grains(coords, atom_type[1], atom_type[2], filename + f'_{atom_type[0]}.txt')
+
+        return
 
     def apply_node_constraints(self, node_list: list):
         node_constraints = [np.dot(nd.fixed_dof[0:3], np.array([100, 10, 1])) for nd in node_list]
@@ -896,24 +933,42 @@ class Simulation:
 
         return self._angle_type_iter
 
-    def add_bond_types(self, bond_type_list: list):
+    def add_bond_types(self, *, bond_type_list: list | None = None, structure = None, bonds = None):
+        if bonds is None: bonds = []
+        if not structure is None:
+            if not bond_type_list is None: raise Exception('Please provide only a list of bond types or a structure, not both')
+            bond_type_list = structure.bond_type_list
         print(f"# Creating {len(bond_type_list)} Bond Types #")
         with open(os.path.join(self._path, "in.main_file"), "a") as f:
             for bnd_type in bond_type_list:
-                print_str = f"{bnd_type[1]}_coeff {bnd_type[0]}"
-                for param in bnd_type[3]:
+                # Add bond types to simulation
+                new_bond_id = len(self.bond_type_list) + 1
+                new_bond_type = (new_bond_id, bnd_type[1], bnd_type[2], bnd_type[3])
+                self.bond_type_list.append(new_bond_type)
+                ### TODO - Reconnect bond.type_id to new ids
+
+                # Write bond types to lammps input files
+                print_str = f"{new_bond_type[1]}_coeff {new_bond_type[0]}"
+                for param in new_bond_type[3]:
                     print_str += f" {param}"
                 f.write(print_str + "\n")
-                f.write(f"include {bnd_type[1]}_{bnd_type[0]}.txt\n")
+                f.write(f"include structure/{new_bond_type[1]}_{new_bond_type[0]}.txt\n")
 
-    def add_bonds(self, bond_type_list: list, bond_list):
+    def add_bonds(self, *, bond_list = None, structure = None):
+        if not structure is None:
+            if not bond_list is None: raise Exception('Please provide only a list of bonds or a structure, not both')
+            bond_list = structure.bonds
         if not isinstance(bond_list, list): bond_list = [bond_list]
+
+        for bond in bond_list:
+            bond.sim_id = len(self.bonds) + 1
+            self.bonds.append(bond)
 
         print(f"# Creating {len(bond_list)} Bonds #")
 
-        for bond_type in bond_type_list:
-            similar_bonds = [bnd for bnd in bond_list if bnd.style.type == bond_type[1]]
-            with open(os.path.join(self._path, f"{bond_type[1]}_{bond_type[0]}.txt"), "w") as f:
+        for bond_type in self.bond_type_list:
+            similar_bonds = [bnd for bnd in bond_list if bnd.type_id == bond_type[0]]
+            with open(os.path.join(self._path, f"structure/{bond_type[1]}_{bond_type[0]}.txt"), "w") as f:
                 for bnd in similar_bonds:
                     print_str = f"create_bonds single/{bond_type[1]} {bond_type[0]}"
                     for i_atm in range(len(bnd.atom_ids)):
@@ -1265,6 +1320,8 @@ class Simulation:
         xvel: float = None,
         yvel: float = None,
         zvel: float = None,
+        move_type: str | None = None,
+        parameters: list | None = None
     ) -> int:
         """
         Move a set of particles at some velocity
@@ -1279,6 +1336,7 @@ class Simulation:
         Note: If you pass in 'None' to either xvel, yvel, or zvel, or leave them blank, those 
         velocities will not be mandated, and the particles will be free to move in those directions
         """
+        if move_type is None: move_type = 'linear'
         if not particles is None and not type is None:
             raise Exception("You can move EITHER a particle OR a type of particle")
         if particles is None and type is None:
@@ -1297,13 +1355,14 @@ class Simulation:
 
         self._move_iter += 1
 
+        fix_command: str = f"fix fix_move_{self._move_iter} group_move_{self._move_iter} move {move_type} "\
+            + " ".join(str(dir_vel) if not dir_vel is None else 'NULL' for dir_vel in [xvel, yvel, zvel])
+        if not parameters is None:
+            fix_command += " " + " ".join(str(parameter) if not parameter is None else 'NULL' for parameter in parameters)
+
         with open(os.path.join(self._path, "in.main_file"), "a") as f:
             f.write(f"\ngroup group_move_{self._move_iter} " + group + "\n")
-            f.write(
-                f"fix fix_move_{self._move_iter} group_move_{self._move_iter} move linear "
-                + " ".join(str(dir_vel) if not dir_vel is None else 'NULL' for dir_vel in [xvel, yvel, zvel])
-                + "\n"
-            )
+            f.write(fix_command + "\n")
 
         return self._move_iter
 
@@ -1577,7 +1636,7 @@ class Simulation:
                     self._dump_list.append("c_stretchingE")
 
                 f.write(
-                    f"dump pump all custom 1 out*.dump id type radius x y z "
+                    f"dump pump all custom 1 raw/out*.dump id type radius x y z "
                     + " ".join(str(item) for item in self._dump_list)
                     + "\n"
                 )

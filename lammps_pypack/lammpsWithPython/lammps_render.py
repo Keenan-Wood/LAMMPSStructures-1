@@ -12,13 +12,15 @@ from ovito.io import import_file
 from ovito.vis import *
 from ovito import dataset
 
-def render_dumps(img_size: tuple = (640, 480),dump_path: str = os.getcwd(),orient_name = ['top', 'front', 'left', 'perspective'],gif_path = None) -> None:
+def render_dumps(img_size: tuple = (640, 480), sim_path: str | None = None, orient_name = ['top', 'front', 'left', 'perspective'], dump_path: str | None = None) -> None:
     '''
     This function renders the desired views (to chose in ['top', 'front', 'left', 'perspective']) of the provided dump file(s) as images (pngs) or animations (gifs).
     '''
 
-    if gif_path is None:
-        gif_path = dump_path
+    if sim_path is None:
+        sim_path = os.getcwd()
+    if dump_path is None:
+        dump_path = sim_path + '/raw/'
 
     # Initialize the ovito viewports with the standard camera directions
     vp_top = Viewport(type=Viewport.Type.Top, camera_dir=(0, 0, -1))
@@ -49,14 +51,14 @@ def render_dumps(img_size: tuple = (640, 480),dump_path: str = os.getcwd(),orien
 
         if pipeline.num_frames == 1:
             vp.render_image(
-                filename=os.path.join(gif_path, f'ovito_img_{orient}.png'),
+                filename=os.path.join(sim_path, f'ovito_img_{orient}.png'),
                 size=img_size,
                 background=(0, 0, 0),
                 renderer=TachyonRenderer(ambient_occlusion=False, shadows=False)
             )
         else:
             vp.render_anim(
-                filename=os.path.join(gif_path, f'ovito_anim_{orient}.gif'),
+                filename=os.path.join(sim_path, f'ovito_anim_{orient}.gif'),
                 size=img_size,
                 fps=10,
                 background=(1.0, 1.0, 1.0),

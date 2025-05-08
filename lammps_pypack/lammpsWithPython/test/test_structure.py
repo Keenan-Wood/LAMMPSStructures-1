@@ -25,16 +25,16 @@ beam_length = 0.100
 beam_thickness = 0.002
 Np_beam = 100
 Np_side = 20
-squish_factor = 0.2
+squish_factor = 0.02
+wiggle_frequency = 1.0
 E_beams = 0.96 * 10 ** 6
 E_walls = 10 ** 4
 
 density = 0.5
-viscosity = 2 * 10 ** -7
+viscosity = 2 * 10 ** -7 #* 10**2
 timestep = 1 * 10 ** -7
-dump_timestep = 10 ** -7
+dump_timestep = 10 ** -2
 simtime = 1
-#simtime = 0.001
 
 Np_between = int(Np_beam / beam_length * d_between_beams) - 1
 Np_hori = 2*Np_side + Np_between + 2
@@ -50,30 +50,30 @@ sim.turn_on_granular_potential(youngs_modulus = E_walls)
 
 ## Define the nodes with coordinates and diameters
 # Here the coordinates of node 1 and 3 will be calculated from the parametric equations we provide the elements
-node_diameter = 0.002
+node_diameter = beam_thickness
 nodes = [
     ([0, 0, 0], node_diameter),
     (None, node_diameter),
     ([d_between_beams, 0, 0], node_diameter),
     (None, node_diameter)
     ]
-constraints = [[1, 1,1,1,1,1,1], [3, 1,1,1,1,1,1]]
+constraints = [[0, 1,1,1,1,1,1], [2, 1,1,1,1,1,1]]
+#constraints = None
 
 (E, rho) = (E_beams, density)
 materials = [['test_material_0', E, rho]]
 xsecs = [[0, beam_thickness]]
 
-# Define the elements with node id pairs
+# Define the elements with rnode id pairs
 r_helix = 0.003
-N_turns = 10
+N_turns = 15
 param_eqs = [lambda t: r_helix*(np.cos(N_turns*2*np.pi*t) - 1),
              lambda t: r_helix*np.sin(N_turns*2*np.pi*t),
-             lambda t: beam_length*t]
-elements = [(0, 1, param_eqs), (2, 3, param_eqs), (0, 2), (1, 3)]
-connections = [
-    ([0, 2, 4], ('dihedral','spherical'), None),
-    ([1, 3, 5], ('dihedral','spherical'), None),
-    ]
+             lambda t: -beam_length*t]
+elements = [(0, 1, param_eqs), (2, 3, param_eqs), (1, 3), (0,2)]
+particle_dist = beam_length/Np_beam
+angle_stiffness = E_beams * (beam_thickness ** 4) / (12*particle_dist)
+angle_offset = 90
 
 # Create the structure object
 new_structure = lstruct.Structure(
@@ -81,101 +81,55 @@ new_structure = lstruct.Structure(
     material_list = materials,
     xsection_list = xsecs,
     element_list = elements,
-    connection_list = connections,
     constraint_list = constraints)
 new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1.png')
 
 # Translate structure to place the origin in the center (after patterning)
-new_structure.translate([-d_between_beams*n_beams/2, 0, -beam_length/2], copy=False)
+new_structure.translate([-d_between_beams*n_beams/2, 0, beam_length/2], copy=False)
 new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1_shifted.png')
 
+# Join an offset copy of the structure and apply connections
+connections = [
+    ([0, 1, 3], ('angle', 'cosine/delta'), [angle_stiffness, 180 - angle_offset]),
+    ([1, 0, 2], ('angle', 'cosine/delta'), [angle_stiffness, 180 - angle_offset]),
+    ([1, 3, 5], ('dihedral','spherical'), None),
+    ([0, 2, 4], ('dihedral','spherical'), None)
+    ]
+new_structure = new_structure.pattern_linear(np.array([1,0,0]), 1, offset = d_between_beams, connections = connections)
+new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1_dual-cell.png')
+
 # Pattern the structure (repeat n_beams - 1 times in x-direction, and join together)
-new_structure = new_structure.pattern_linear(np.array([1,0,0]), n_beams - 1, offset = d_between_beams)
+new_structure = new_structure.pattern_linear(np.array([1,0,0]), n_beams - 3, offset = d_between_beams)
 new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1_patterned.png')
 
 # Discretize the structure to generate list of atoms and bonds (and their types)
 (atom_type_list, bond_type_list, atoms, bonds) = new_structure.discretize(beam_length/Np_beam)
 
-# Add node atoms to simulation
-node_atom_types = atom_type_list[0:len(new_structure.nodes)]
-sim.add_atoms(node_atom_types, atoms, "node")
+# Add end bonds
+end_node_id = len(new_structure.nodes) - 1
+new_structure.add_node_bonds([end_node_id - 1, end_node_id, end_node_id - 2], ('angle', 'cosine/delta'), [angle_stiffness, 180 - angle_offset])
+new_structure.add_node_bonds([end_node_id, end_node_id - 1, end_node_id - 3], ('angle', 'cosine/delta'), [angle_stiffness, 180 - angle_offset])
 
-# Add element atoms to simulation
-element_atom_types = atom_type_list[len(new_structure.nodes):]
-sim.add_atoms(element_atom_types, atoms, "element")
-# Turn of granular interaction between atoms belonging to the same element
-for el_atm_type in element_atom_types:
-    sim.turn_on_granular_potential(type1 = el_atm_type[0], type2 = el_atm_type[0], youngs_modulus = 0)
-
+# Add structure atoms to simulation, apply constraints, and add bond types, bonds
+sim.add_atoms(structure=new_structure)
 sim.apply_node_constraints(new_structure.nodes)
-sim.add_bond_types(bond_type_list)
-sim.add_bonds(bond_type_list, bonds)
-sim.turn_on_granular_potential(youngs_modulus = 0)
+sim.add_bond_types(structure=new_structure)
+sim.add_bonds(structure=new_structure)
 
-#for beam_dat in beam_data:
-#    beam, _, _ = sim.add_beam(beam_dat[0], beam_dat[1], beam_dat[2], beam_thickness, E_beams, density)
-#    sim.turn_on_granular_potential(type1 = beam, type2 = beam, youngs_modulus = 0)
+# Wiggle bottom nodes up and down
+moving_nodes = [1 + 2*i_beam for i_beam in range(n_beams)]
+atoms_to_move = [new_structure.nodes[i_nd].atom.id for i_nd in moving_nodes]
+#atoms_to_move += [atm.id for el in new_structure.elements for atm in el.atoms if el.node_a.id in moving_nodes and el.node_b.id in moving_nodes]
+sim.move(particles = atoms_to_move, xvel = 0, yvel = 0, zvel = squish_factor * beam_length, move_type = 'wiggle', parameters = [1/wiggle_frequency])
 
-#bond_stiffness = E_beams * beam_thickness**2 / (2*dy)
-#for bond_dat in bond_data:
-#    _ = sim.construct_many_bonds(bond_dat, bond_stiffness, dy)
+# Clamp all atoms of fixed top
+fixed_nodes_list = [2*i_beam for i_beam in range(n_beams)]
+fixed_element_list = [el for el in new_structure.elements if el.node_a.id in fixed_nodes_list and el.node_b.id in fixed_nodes_list]
+for el in fixed_element_list:
+    atom_ids = [atm.id for atm in el.atoms]
+    sim.move(particles = atom_ids, xvel = 0, yvel = 0, zvel = 0)
 
-#angle_stiffness = E_beams * (beam_thickness ** 4) / (12*dy)
-#for angle_dat in angle_data:
-#    _ = sim.construct_many_angles(angle_dat, angle_stiffness)
-
-#x_end_list = np.linspace(x_rng[0], x_rng[1], n_beams).tolist()
-#for x_end in x_end_list:
-#    z_end = np.array([-beam_length/2, beam_length/2])
-#    beam, _, _ = sim.add_beam(Np_beam, np.array([x_end,0,z_end[0]]), np.array([x_end,0,z_end[1]]), beam_thickness, E_beams, density)
-#    sim.turn_on_granular_potential(type1 = beam, type2 = beam, youngs_modulus = 0)
-
-#z_end_list_hori = [-beam_length/2 - dy, beam_length/2 + dy]
-#x_end = np.array([x_rng[0] - dy*(Np_side - 1), x_rng[1] + dy*(Np_side + 1)])
-#for z_end in z_end_list_hori:
-#    hori_beam, _, _ = sim.add_beam(Np_hori, np.array([x_end[0],0,z_end]), np.array([x_end[1],0,z_end]), beam_thickness, E_beams, density)
-#    sim.turn_on_granular_potential(type1 = hori_beam, type2 = hori_beam, youngs_modulus = 0)
-
-#hori_joint_ids = np.array([n_beams*Np_beam + Np_side + 1,
-#                           n_beams*Np_beam + Np_side + Np_between + 2,
-#                           n_beams*Np_beam + Np_hori + Np_side + 1,
-#                           n_beams*Np_beam + Np_hori + Np_side + Np_between + 2])
-#beam_end_pairs = np.array([[1, hori_joint_ids[0]], [Np_beam, hori_joint_ids[2]],
-#                           [Np_beam + 1, hori_joint_ids[1]], [2*Np_beam, hori_joint_ids[3]]])
-#beam_end_triplets = np.array([[hori_joint_ids[0] + 1, hori_joint_ids[0], 1],
-#                              [hori_joint_ids[2] + 1, hori_joint_ids[2], Np_beam],
-#                              [hori_joint_ids[1] - 1, hori_joint_ids[1], Np_beam + 1],
-#                              [hori_joint_ids[2] - 1, hori_joint_ids[2], 2*Np_beam]])
-#bond_stiffness = E_beams * beam_thickness**2 / (2*dy)
-#angle_stiffness = E_beams * (beam_thickness ** 4) / (12*dy)
-#_ = sim.construct_many_bonds(beam_end_pairs, bond_stiffness, dy)
-#_ = sim.construct_many_angles(beam_end_triplets, angle_stiffness)
-
-# Clamp the clamp particles. Here we also clamp them in x and y, but this can be changed.
-#bottom_clamp = [n_beams*Np_beam + 1, n_beams*Np_beam + 2, n_beams*Np_beam + Np_hori - 1, n_beams*Np_beam + Np_hori]
-#top_clamp = [n_beams*Np_beam + Np_hori + 1, n_beams*Np_beam + Np_hori + 2, n_beams*Np_beam + 2*Np_hori - 1, n_beams*Np_beam + 2*Np_hori]
-#sim.move(particles = bottom_clamp, xvel = 0, yvel = 0, zvel = 0) #zvel = squish_factor * beam_length / simtime)
-#sim.move(particles = top_clamp, xvel = 0, yvel = 0, zvel = 0) #zvel = - squish_factor * beam_length / simtime)
-
-# Actuate downward
-#center_point = [int(n_beams*Np_beam + Np_hori + Np_hori/2)]
-#sim.move(particles = center_point, xvel = 0, yvel = 0, zvel = -squish_factor * beam_length / simtime)
-atoms_to_move = [new_structure.nodes[i_nd].atom.id for i_nd in range(n_beams, 2*n_beams)]
-sim.move(particles = atoms_to_move, xvel = 0, yvel = 0, zvel = 0.2 * beam_length / simtime)
-
-# Actuate rightward
-#mid_point = [int(Np_beam/2)]
-#sim.move(particles = mid_point, xvel = 0.1 * squish_factor * beam_length / simtime, yvel = 0, zvel = 0)
-
-# Perturb the beams to buckle to the left or right randomly
-#dirs = np.random.rand(len(beam_positions),1)
-#p1 = sim.perturb(type = [i+1 for i in np.where(dirs>0.5)[0].tolist()],xdir = 1)
-#p2 = sim.perturb(type = [i+1 for i in np.where(dirs<=0.5)[0].tolist()],xdir = -1)
-mid_atom_ids = [new_structure.get_atom_id([2*i_nd, 2*i_nd + 1], 0.5) for i_nd in range(n_beams)]
-sim.perturb(particles = mid_atom_ids, xdir = 1)
-
-# Add the viscosity, which just helps the simulation from exploding, mimics the normal 
-# damping of air and slight viscoelasticity which we live in but don't appreciate
+# Add viscosity for energy dissipation
 sim.add_viscosity(viscosity)
 
 # Make the dump files and run the simulation
@@ -187,7 +141,7 @@ lsim.run_lammps(sim)
 
 # Render dump files with Ovito
 img_size = (640, 480)
-lrend.render_dumps(img_size, str(sim_path) + f'/{simname}', orient_name=['front'])
+lrend.render_dumps(img_size, str(sim_path) + f'/raw/{simname}', orient_name=['front'])
 
 # Stitch gifs into one composite gif
 #gif_fnames = ['ovito_anim_front.gif', 'ovito_anim_perspective.gif']

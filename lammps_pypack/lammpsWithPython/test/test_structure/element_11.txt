@@ -1,4 +1,0 @@
-create_atoms 11 single -0.0115 0.0 -0.05
-create_atoms 11 single -0.0105 0.0 -0.05
-create_atoms 11 single -0.0095 0.0 -0.05
-create_atoms 11 single -0.0085 0.0 -0.05

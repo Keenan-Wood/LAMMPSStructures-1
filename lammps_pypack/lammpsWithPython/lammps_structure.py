@@ -4,14 +4,13 @@ from typing import Type
 import warnings
 
 import matplotlib.pyplot as plt
+from scipy.spatial.transform import Rotation as R
 
 ## General TODO:
-
-## bond, structure - Create function to calculate bond parameters (use for add_node_bonds too)
-## node - remove angular DOF
-## element, structure - remove ability to add by object (instead of id or data)
+## bonds - Add bond_type object and refactor bond type handling
 ## structure, node, atom - Refactor constraints in a more lammps-friendly format
 ## element, structure - Add ability to offset discretization element lengths due to different node atom diameters
+## structure - Test rotation, circular patterning, and mirroring methods
 
 class BondStyle:
     def __init__(
@@ -32,13 +31,13 @@ bond_style_list.append(BondStyle(
     bond_type = 'bond',
     bond_style = 'harmonic',
     N_atoms = 2, 
-    params = [('stiffness', float), ('rest_length', float)]
+    params = [('stiffness', float | int), ('rest_length', float | int)]
     ))
 bond_style_list.append(BondStyle(
     bond_type = 'angle',
-    bond_style = 'cosine/shift',
+    bond_style = 'cosine/delta',
     N_atoms = 3,
-    params = [('energy', float), ('offset', float)]
+    params = [('energy', float | int), ('offset', float | int)]
     ))
 bond_style_list.append(BondStyle(
     bond_type = 'dihedral',
@@ -46,7 +45,7 @@ bond_style_list.append(BondStyle(
     N_atoms = 4,
     params = [
         ('N_sub_params', int),
-        ('sub_params', [('energy', float), ('frequency_phi', int), ('offset_phi', float | int), ('u', int),
+        ('sub_params', [('energy', float | int), ('frequency_phi', int), ('offset_phi', float | int), ('u', int),
                                            ('frequency_1', int), ('offset_1', float | int), ('v', int),
                                            ('frequency_2', int), ('offset_2', float | int), ('w', int)])
         ]
@@ -166,7 +165,8 @@ class Structure:
         self.xsections = []
         if not xsection_list is None: self.add_xsections(xsection_list)
 
-        # Create nodes and set fixed DOF
+        # Set orientation (Intrinsic Euler Angles); Create nodes and set fixed DOF
+        self.orient = np.array([0, 0, 0])
         self.nodes = []
         if not node_list is None: self.add_nodes(node_list)
         if not constraint_list is None: self.add_constraints(constraint_list)
@@ -179,7 +179,8 @@ class Structure:
 
         self.atoms = []
         self.bonds = []
-        self.element_connections = connection_list
+        self.element_connections = []
+        if not connection_list is None: self.add_connections(connection_list)
 
     def __str__(self) -> str:
         print_str = f'\nStructure Data\n'
@@ -262,11 +263,12 @@ class Structure:
                     if new_node.density != overlapping_node.density: raise Exception('Densities of coincident nodes to merge do not match')
                     new_node.change_id(overlapping_node.id, force=True)
                     warnings.warn('Overlapping nodes merged - check for node ID changes')
+                    ## TODO - Check constraints
 
         # Reassign node ids to new nodes
         start_id = max(node_ids) + 1
         for i_nd, node_to_change in enumerate(change_node_ids):
-            node_to_change.change_id(start_id + i_nd)   
+            node_to_change.change_id(start_id + i_nd)
             warnings.warn('Node with duplicate ID given new ID')           
 
         # Combine elements
@@ -290,17 +292,26 @@ class Structure:
                 for i_eq in range(3):
                     if not new_el.para_eq[i_eq].__code__.co_code == dup_element.para_eq[i_eq].__code__.co_code: raise Exception('Parametric equations of elements to merge do not match')
 
-        # Tabulate node and element data
+        # Combine connections
+        new_structure_connections = cp.copy(struct_1.element_connections)
+        for new_connect in struct_2.element_connections:
+            new_structure_connections.append(new_connect)
+        
+        # Tabulate node, element, and connection data
         new_structure_nodes.sort(key = lambda nd: nd.id)
         node_list = [(nd.coords, nd.diameter) for nd in new_structure_nodes]
+        constraint_list = [[i_nd] + list(nd.fixed_dof) for i_nd, nd in enumerate(new_structure_nodes)]
         element_list = [[el.node_a.id, el.node_b.id, el.para_eq, el.material, el.xsec] for el in new_structure_elements]
+        connection_list = [([nd.id for nd in connect[0]], connect[1], connect[2]) for connect in new_structure_connections]
 
         # Create combined structure
         combined_structure = Structure(
             node_list = node_list,
             material_list = new_structure_materials,
             xsection_list = new_structure_xsections,
-            element_list = element_list
+            element_list = element_list,
+            constraint_list = constraint_list,
+            connection_list = connection_list
         )
         return combined_structure
 
@@ -308,7 +319,7 @@ class Structure:
         self = self + structure_2
         return self
 
-    def add_nodes(self, node_list: list | tuple):
+    def add_nodes(self, node_list: list | tuple) -> None:
         if isinstance(node_list, tuple): node_list = [node_list]
         for node_data in node_list:
             # Parse node coordinates
@@ -327,8 +338,9 @@ class Structure:
             # Create node and add to structure's node list
             new_node = Node(self, coords = node_coords, diameter = node_diameter)
             self.nodes.append(new_node)
+        return
 
-    def add_constraints(self, constraints: list):
+    def add_constraints(self, constraints: list) -> None:
         for constraint in constraints:
             con = np.array(constraint[1:-1])
             nd = next(filter(lambda nd: nd.id == constraint[0], self.nodes), None)
@@ -337,8 +349,9 @@ class Structure:
                 # Fill con array with ones if only a few dimensions are given
                 if len(con) < 6: con = np.append(con, np.ones(6 - len(con)))
                 nd.fixed_dof = con
+        return
 
-    def add_materials(self, material_list: list | Material):
+    def add_materials(self, material_list: list | Material) -> None:
         if not isinstance(material_list, list): 
             material_list = [material_list]
         # Create materials with provided data; Add to 'materials' list
@@ -351,8 +364,9 @@ class Structure:
             elif isinstance(mat, Material) and not mat.name in material_names:
                 self.materials.append(mat)
                 material_names.append(mat.name)
+        return
 
-    def add_xsections(self, xsection_list):
+    def add_xsections(self, xsection_list) -> None:
         if isinstance(xsection_list, XSection): xsection_list = [xsection_list]
         if not isinstance(xsection_list, list): raise Exception('xsection_list type error: must be a list or xsection')
         xsection_ids = [xsec.id for xsec in self.xsections]
@@ -364,8 +378,9 @@ class Structure:
                 new_xsection = XSection(*tuple(xsec))
                 self.xsections.append(new_xsection)
                 xsection_ids.append(new_xsection.id)
+        return
 
-    def add_elements(self, element_list: list | tuple):
+    def add_elements(self, element_list: list | tuple) -> None:
         if isinstance(element_list, tuple): element_list = [element_list]
         for el in element_list:
             # Get node ids of element to add
@@ -384,23 +399,35 @@ class Structure:
             if not duplicate_element:
                 new_element = Element(*tuple([self] + list(el)))
                 self.elements.append(new_element)
+        return
+    
+    def add_connections(self, connection_list: list) -> None:
+        for connect in connection_list:
+            node_list = []
+            for nd_id in connect[0]:
+                node_list.append(next(filter(lambda nd: nd.id == nd_id, self.nodes), None))
+            new_connection = (node_list, connect[1], connect[2])
+            self.element_connections.append(new_connection)
+        return
 
-    def add_node_bonds(self, element_pair: list, bond_style: BondStyle | tuple, bond_parameters: list):
+    def add_node_bonds(self, element_pair: list, bond_style: BondStyle | tuple, bond_parameters: list) -> None:
         # If element_pair is specified as a node id triplet, find matching pair of elements 
         if len(element_pair) == 3:
-            el_a_nodes = [element_pair[0], element_pair[1]]
-            el_b_nodes = [element_pair[1], element_pair[2]]
+            if any([isinstance(nd, Node) for nd in element_pair]):
+                el_a_nodes = [element_pair[0].id, element_pair[1].id]
+                el_b_nodes = [element_pair[1].id, element_pair[2].id]
+            else:
+                el_a_nodes = [element_pair[0], element_pair[1]]
+                el_b_nodes = [element_pair[1], element_pair[2]]
             element_a = [el for el in self.elements if set(el_a_nodes) == set([el.node_a.id, el.node_b.id])]
             element_b = [el for el in self.elements if set(el_b_nodes) == set([el.node_a.id, el.node_b.id])]
             if len(element_a) == 0 or len(element_b) == 0:
-                warnings.warn('No element exists between specified nodes - Ignoring connection bond')
-                return
+                raise Exception('No element exists between specified nodes')
             element_pair = element_a + element_b
-        elif len(element_pair) != 2: raise Exception('Only two elements can be bonded at a time')
-
-        # Find node connecting the pair of elements
-        connecting_node = next(filter(lambda nd: all([el in nd.elements for el in element_pair]), self.nodes), None)
-        if connecting_node is None: raise Exception('No connecting node found for element pair')
+            # Find node connecting the pair of elements
+            connecting_node = next(filter(lambda nd: all([el in nd.elements for el in element_pair]), self.nodes), None)
+            if connecting_node is None: raise Exception('No connecting node found for element pair')
+        elif len(element_pair) != 2: raise Exception('Only two elements can be bound at a time')
 
         # Find matching bond style and needed number of atoms
         if isinstance(bond_style, tuple):
@@ -428,7 +455,9 @@ class Structure:
             atom_ids = [atm.id for atm in atom_set]
             connecting_node.create_bond(atom_ids, bond_style, bond_parameters)
 
-    def rotate(self, rotation_angle: float, axis: list | np.ndarray | None = None):
+        return
+
+    def rotate(self, rotation_angle: float, axis: list | np.ndarray | None = None, copy: bool = True):
         '''
         A function to return a copy of the structure rotated about a specified axis.
         Arguments:
@@ -444,21 +473,30 @@ class Structure:
         elif all([isinstance(node_obj, node) for node_obj in axis]):
             if len(axis) != 2: raise Exception('Only two nodes can be specified to determine the axis of rotation')
             rotation_axis = axis[1].coords[0:2] - axis[0].coords[0:2]
-        #### Define transformation matrix
-        euler_angles = [0, 0, 0]
-        transform_matrix = rotation_axis
-        return NotImplemented #self.transform_affine(transform_matrix)
+        r_mat = R.from_rotvec(rotation_angle*np.array(rotation_axis), degrees=True).as_matrix()
+        full_orient = r_mat @ self.orient.as_matrix()
+        self.orient = full_orient.as_euler('zxy', degrees=True)
+        rotation_matrix = np.eye(4)
+        rotation_matrix[:3, :3] = r_mat
+        rotated_structure = self.transform_affine(rotation_matrix, copy)
+        return rotated_structure
 
     def translate(self, offset: list | np.ndarray, copy: bool = True):
         transform_matrix = np.eye(4)
         transform_matrix[0:3, 3] = offset
-        return self.transform_affine(transform_matrix, copy)
+        translated_structure = self.transform_affine(transform_matrix, copy)
+        return translated_structure
 
-    def mirror(self, mirror_plane_pts: np.ndarray):
-        ########### Add code to construct transformation matrix 
-        return NotImplemented #self.transform_affine(transform_matrix)
+    def mirror(self, point_coords: np.ndarray, norm_vec: np.ndarray, copy: bool = True):
+        self.translate(-point_coords, copy=False)
+        mirror_matrix = np.eye(4)
+        mirror_matrix[:3, :3] += -2*norm_vec @ norm_vec.T
+        mirrored_structure = self.transform_affine(mirror_matrix, copy)
+        self.translate(point_coords, copy=False)
+        if copy: mirrored_structure.translate(point_coords, copy=False)
+        return mirrored_structure
 
-    def pattern_linear(self, axis: np.ndarray, n: int, offset: float | None, total_distance: float | None = None):
+    def pattern_linear(self, axis: np.ndarray, n: int, offset: float | None, total_distance: float | None = None, connections: list | None = None):
         if total_distance is None and offset is None: raise Exception('Either offset or total distance must be specified')
         if not total_distance is None and not offset is None: raise Exception('Only one of offset or total distance can be specified')
         pattern = cp.deepcopy(self)
@@ -467,6 +505,19 @@ class Structure:
         for i_n in range(n):
             dist_offset = offset * (i_n + 1) * axis
             self += pattern.translate(dist_offset)
+        if not connections is None: self.add_connections(connections)
+        return self
+
+    def pattern_circular(self, axis: np.ndarray, n: int, angle: float | None, total_angle: float | None = None, connections: list | None = None):
+        if total_angle is None and angle is None: raise Exception('Either angle or total_angle must be specified')
+        if not total_angle is None and not angle is None: raise Exception('Only one of angle or total angle can be specified')
+        pattern = cp.deepcopy(self)
+        if angle is None:
+            angle = total_angle / (n + 1)
+        for i_n in range(n):
+            angle_offset = angle * (i_n + 1) * axis
+            self += pattern.rotate(angle_offset, axis)
+        if not connections is None: self.add_connections(connections)
         return self
 
     def transform_affine(self, affine_matrix: np.ndarray, copy: bool = True):
@@ -502,36 +553,13 @@ class Structure:
 
         # Discretize the structure's nodes and elements into atoms
         for nd in self.nodes: nd.discretize()
-        for el in self.elements: el.discretize(atom_distance)
+        for el in self.elements:
+            el.discretize(atom_distance)
         
         # Bond element pairs through nodes (ie. with angle, dihedral, etc. bonds)
         if not self.element_connections is None:
             for el_connection in self.element_connections:
                 self.add_node_bonds(*el_connection)
-
-        # Build list of atom types (by element)
-        max_node_id = max([nd.id for nd in self.nodes])
-        atom_types = [(nd.id + 1, nd.atom.diameter, nd.atom.density) for nd in self.nodes]
-        atom_types += [(max_node_id + i_el + 2, el.atoms[0].diameter, el.atoms[1].density) for i_el, el in enumerate(self.elements)]
-        self.atom_type_list = atom_types
-
-        # Assign type ids to atoms
-        for nd in self.nodes: nd.atom.type_id = nd.id + 1
-        for i_el, el in enumerate(self.elements):
-            for atm in el.atoms: atm.type_id = max_node_id + i_el + 2
-
-        # Build list of unique bond types
-        bond_types = []
-        for bond in self.bonds:
-            new_type = True
-            for bond_type in bond_types:
-                if bond_type[1] == bond.style.type and bond_type[2] == bond.style.style and compare_lists(bond_type[3], bond.parameters):
-                    bond.type_id = bond_type[0]
-                    new_type = False
-            if new_type:
-                bond.type_id = len(bond_types) + 1
-                bond_types.append((len(bond_types) + 1, bond.style.type, bond.style.style, bond.parameters))
-        self.bond_type_list = bond_types
                 
         return (self.atom_type_list, self.bond_type_list, self.atoms, self.bonds)
 
@@ -570,6 +598,7 @@ class Structure:
         # Plot each node
         for nd in self.nodes:
             ax.plot(nd.coords[0], nd.coords[1], nd.coords[2], label='node', marker='o', color='black')
+            ax.text(nd.coords[0], nd.coords[1], nd.coords[2], str(nd.id))
 
         # Plot each element
         for el in self.elements:
@@ -655,7 +684,7 @@ class Node:
         self.elements = [el for el in self.parent_structure.elements if self in [el.node_a, el.node_b]]
 
     def edit_coords(self, new_coords: np.array):
-        if len(new_coords) < 6: new_coords = np.append(new_coords, np.zeros(6 - len(new_coords)))
+        if len(new_coords) < 3: new_coords = np.append(new_coords, np.zeros(3 - len(new_coords)))
         self.coords = new_coords
         for el in self.elements:
             if el.para_linear is True: para_eq = []
@@ -680,7 +709,12 @@ class Node:
         return Bond(atom_ids, bond_style, parameters, parent_node=self)
     
     def discretize(self):
-        return self.create_atom(self.coords)
+        new_atom = self.create_atom(self.coords)
+        # Create a new atom type and assign to parent structure; ID to self
+        new_atom_type = (self.id + 1, new_atom.diameter, new_atom.density)
+        new_atom.type_id = self.id + 1
+        self.parent_structure.atom_type_list.append(new_atom_type)
+        return self
 
 class Element:
     '''
@@ -714,12 +748,18 @@ class Element:
         node_b: int,
         para_eq: list | None = None,
         mat: list | Material | str | None = None,
-        xsec: list | XSection | int | None = None
+        xsec: list | XSection | int | None = None,
+        angular_rigidity_factor: float = 1,
+        dihedral_rigidity_factor: float = 0.1
         ):
 
         self.parent_structure = parent_structure
         self.atoms = []
         self.bonds = []
+
+        # Set stiffness scaling coefficients
+        self.angular_rigidity_factor = angular_rigidity_factor
+        self.dihedral_rigidity_factor = dihedral_rigidity_factor
 
         # Assign end nodes
         matching_node_a = next(filter(lambda nd: nd.id == node_a, parent_structure.nodes), None)
@@ -767,10 +807,14 @@ class Element:
 
             # Set node coordinate given equation and other node if not set
             if self.node_a.coords is None and not self.node_b.coords is None:
-                coords = np.array([para_eq[0](1), para_eq[1](1), para_eq[2](1)])
+                ref_coords = np.array([para_eq[0](1), para_eq[1](1), para_eq[2](1)])
+                r_mat = R.from_euler('zyx', list(self.parent_structure.orient), degrees=True)
+                coords =  r_mat.as_matrix() @ ref_coords
                 self.node_a.coords = self.node_b.coords - coords
             elif self.node_b.coords is None and not self.node_a.coords is None:
-                coords = np.array([para_eq[0](1), para_eq[1](1), para_eq[2](1)])
+                ref_coords = np.array([para_eq[0](1), para_eq[1](1), para_eq[2](1)])
+                r_mat = R.from_euler('zyx', list(self.parent_structure.orient), degrees=True)
+                coords =  r_mat.as_matrix() @ ref_coords
                 self.node_b.coords = self.node_a.coords + coords
 
             # Check all coordinates for mismatching values with parametric function
@@ -787,6 +831,7 @@ class Element:
             z_eq = lambda t: t * (self.node_b.coords[2] - self.node_a.coords[2])
             self.para_eq = [x_eq, y_eq, z_eq]
             self.para_linear: bool = True
+            self.dihedral_rigidity_factor = 0
         else: raise Exception('Could not parameterize - No parametric equations were provided and at least one end node has an undefined position')
 
     def set_material(self, mat: list | Material | str):
@@ -824,7 +869,6 @@ class Element:
         A function to discretize an element with spacing not greater than the specified atom distance.
         It removes overlapping atoms at nodes where elements join, and returns the list of atoms.
         '''
-        ### Do not call except from structure.discretize() -- atom ids need to be fully reassigned
         # Compute atom coordinates with parametric equations
         N_bonds = int(np.ceil(self.length/atom_distance))
         if N_bonds < 1: raise Exception('There must be at least 2 atoms per element')
@@ -833,14 +877,24 @@ class Element:
         x_vec = x_eq(t) + self.node_a.coords[0]
         y_vec = y_eq(t) + self.node_a.coords[1]
         z_vec = z_eq(t) + self.node_a.coords[2]
-        atom_coords = np.array([x_vec, y_vec, z_vec, t*0, t*0, t*0]).T
-        ## TODO - interpolate twist/moment to set atom angles (instead of 0, 0, 0)
+        atom_coords = np.array([x_vec, y_vec, z_vec]).T
 
         # Remove end atom coordinates (overlapping with node atoms)
         atom_coords = atom_coords[1:-1]
 
         # Create the element's atoms
         for coords in atom_coords: self.create_atom(coords)
+
+        # Calculate a new atom type ID
+        max_node_id = max([nd.id for nd in self.parent_structure.nodes])
+        i_el = self.parent_structure.elements.index(self)
+        new_type_id = max_node_id + i_el + 2
+
+        # Assign the new atom type to the parent structure; ID to self
+        new_atom_type = (new_type_id, self.xsec.atom_diameter, self.material.rho)
+        for atm in self.atoms:
+            atm.type_id = new_type_id
+        self.parent_structure.atom_type_list.append(new_atom_type)        
 
         # Create the element's two-atom bonds
         rest_length = self.length / N_bonds
@@ -850,48 +904,34 @@ class Element:
         self.node_b.create_bond([self.atoms[-1].id, self.node_b.atom.id], ('bond', 'harmonic'), [bond_stiffness, rest_length])
 
         # Create the element's four-atom bonds (dihedrals)
-        angular_stiffness = self.material.E * self.xsec.atom_diameter**4 / (12*rest_length)
+        angular_stiffness = self.angular_rigidity_factor * self.material.E * self.xsec.atom_diameter**4 / (12*rest_length)
         atom_list = [self.node_a.atom] + self.atoms + [self.node_b.atom]
         atom_list_ids = [atm.id for atm in atom_list]
         if len(atom_list) >= 4:
-            dvecs = [(atom_list[i+1].coords[0:3] - atom_list[i].coords[0:3]) / rest_length for i in range(N_bonds)]
-            calc_vec_angle = lambda vec_a, vec_b: np.atan2(np.linalg.norm(np.cross(vec_a, vec_b)), np.dot(vec_a, vec_b))
+            dvecs = [(atom_list[i+1].coords[:] - atom_list[i].coords[:]) / rest_length for i in range(N_bonds)]
+            calc_vec_angle = lambda vec_a, vec_b: 180 - (180/np.pi) * np.atan2(np.linalg.norm(np.cross(vec_a, vec_b)), np.dot(vec_a, vec_b))
             plane_angles = [calc_vec_angle(dvecs[i_angle], dvecs[i_angle+1]) for i_angle in range(N_bonds - 1)]
 
             # Calculate dihedral angles (angle between half-planes formed by each subsequent group of three nodes)
             dihedral_angles = []
             for i_dh_angle in range(N_bonds - 2):
                 (vec_1, vec_2, vec_3) = tuple(dvecs[i_dh_angle:i_dh_angle + 3])
-                #(vec_a, vec_b) = (np.cross(vec_1, vec_2), np.cross(vec_2, vec_3))
-                #(vec_a, vec_b) = (vec_a / np.linalg.norm(vec_a), vec_b / np.linalg.norm(vec_b))
                 dh_angle_y = np.linalg.norm(vec_2)*np.dot(vec_1, np.cross(vec_2, vec_3))
                 dh_angle_x = np.dot(np.cross(vec_1, vec_2), np.cross(vec_2, vec_3))
-                dihedral_angles.append(np.atan2(dh_angle_y, dh_angle_x))
+                dihedral_angles.append(180/np.pi * np.atan2(dh_angle_y, dh_angle_x))
 
             # Create node and element dihedral bonds
-            rest_angles = [dihedral_angles[0], plane_angles[0], plane_angles[1]]
-            ## TODO - find appropriate coefficient for dihedral stiffness (instead of just 'angular_stiffness')
-            dihedral_stiffness = angular_stiffness * np.sin(rest_angles[1]) * np.sin(rest_angles[2])
-            dihedral_parameters = [3, dihedral_stiffness, 1, rest_angles[0], 1, 1, 90, 0, 1, 90, 0,
-                                      angular_stiffness, 0, 0, 0, 1, rest_angles[1], 1, 0, 0, 0,
-                                      angular_stiffness, 0, 0, 0, 0, 0, 0, 1, rest_angles[2], 1]
-            self.node_a.create_bond(atom_list_ids[:4], ('dihedral','spherical'), dihedral_parameters)
-
-            for i_at, at in enumerate(self.atoms[0:-4]):
-                rest_angles = [plane_angles[i_at + 1], plane_angles[i_at + 2], dihedral_angles[i_at + 1]]
-                dihedral_stiffness = 1 * np.sin(rest_angles[1]) * np.sin(rest_angles[2])
+            for i_atm, atm in enumerate(atom_list[0:-3]):
+                rest_angles = [dihedral_angles[i_atm], plane_angles[i_atm], plane_angles[i_atm + 1]]
+                dihedral_stiffness = self.dihedral_rigidity_factor * angular_stiffness * np.sin(rest_angles[1]) * np.sin(rest_angles[2])
                 dihedral_parameters = [3, dihedral_stiffness, 1, rest_angles[0], 1, 1, 90, 0, 1, 90, 0,
-                                          angular_stiffness, 0, 0, 0, 1, rest_angles[1], 1, 0, 0, 0,
-                                          angular_stiffness, 0, 0, 0, 0, 0, 0, 1, rest_angles[2], 1]
-                self.create_bond([at.id + 1, at.id + 2, at.id + 3, at.id + 4], ('dihedral','spherical'), dihedral_parameters)
+                                          angular_stiffness/2, 0, 0, 0, 1, rest_angles[1], 1, 0, 0, 0,
+                                          angular_stiffness/2, 0, 0, 0, 0, 0, 0, 1, rest_angles[2], 1]
+                if not atm.parent_node is None:
+                    atm.parent_node.create_bond(atom_list_ids[i_atm:i_atm + 4], ('dihedral','spherical'), dihedral_parameters)
+                else:
+                    self.create_bond(atom_list_ids[i_atm:i_atm + 4], ('dihedral','spherical'), dihedral_parameters)
 
-            rest_angles = [plane_angles[-2], plane_angles[-1], dihedral_angles[-1]]
-            dihedral_stiffness = 1 * np.sin(rest_angles[1]) * np.sin(rest_angles[2])
-            dihedral_parameters = [3, dihedral_stiffness, 1, rest_angles[0], 1, 1, 90, 0, 1, 90, 0,
-                                      angular_stiffness, 0, 0, 0, 1, rest_angles[1], 1, 0, 0, 0,
-                                      angular_stiffness, 0, 0, 0, 0, 0, 0, 1, rest_angles[2], 1]
-            self.node_b.create_bond(atom_list_ids[-4:], ('dihedral','spherical'), dihedral_parameters)
-            
         return (self.atoms, self.bonds)
 
 class Atom:
@@ -960,7 +1000,8 @@ class Bond:
         *,
         N_previous_bonds: int = 0,
         parent_element: Element | None = None,
-        parent_node: Node | None = None
+        parent_node: Node | None = None,
+        bond_type_list: list | None = None
         ):
 
         self.parent_element = parent_element
@@ -977,10 +1018,11 @@ class Bond:
             parent_node.bonds.append(self)
             parent_structure = parent_node.parent_structure
 
-        # Determine number of bonds already in parent structure and assign id
+        # Determine number of bonds already in parent structure and assign id; Set bond_type_list
         if not parent_structure is None:
             N_previous_bonds = parent_structure.start_bond_id + len(parent_structure.bonds)
             parent_structure.bonds.append(self)
+            bond_type_list = parent_structure.bond_type_list
         self.id = N_previous_bonds
 
         # Find and link matching bond style
@@ -1014,41 +1056,62 @@ class Bond:
             if parameters is None:
                 raise Exception('No matching bond found - could not infer bond parameters')
         else:
-            # Build list of expected type of each parameter
-            param_type_list = []
-            i_param = 0
-            for param in self.style.params:
-                if param[0] == 'N_sub_params':
-                    if len(parameters) <= i_param:
-                        raise Exception('Not enough parameters provided')
-                    if not isinstance(parameters[i_param], param[1]):
-                        raise Exception('Invalid number of sub-parameter lines to include (must be int)')
-                    N_sub_params = parameters[i_param]
-                if param[0] == 'sub_params':
-                    sub_params = param[1]
-                    for i_param_set in range(N_sub_params):
-                        for sub_param in sub_params:
-                            param_type_list.append(sub_param[1])
-                            i_param = i_param + 1
-                    N_sub_params = 0
-                else:
-                    param_type_list.append(param[1])
-                    i_param = i_param + 1
-            
-            # Verify number of provided parameters is correct
-            if len(parameters) != len(param_type_list):
-                raise Exception('Invalid number of provided parameters')
-
-            # Verify type of each provided parameter is correct
-            for i_param, param in enumerate(parameters):
-                if not isinstance(param, param_type_list[i_param]):
-                    raise Exception('Invalid bond parameter type specified')
+            self.verify_parameters(parameters)
         self.parameters = parameters
+
+        # Assign matching bond_type_id; append type to structure's bond type list if not
+        if not bond_type_list is None:
+            new_type = True
+            for bond_type in bond_type_list:
+                if bond_type[1] == self.style.type and bond_type[2] == self.style.style and compare_lists(bond_type[3], self.parameters):
+                    self.type_id = bond_type[0]
+                    new_type = False
+            if new_type:
+                self.type_id = len(bond_type_list) + 1
+                bond_type_list.append((self.type_id, self.style.type, self.style.style, self.parameters))
 
     def __str__(self):
         print_str = f'Bond ID {self.id} - type/style {self.type}/{self.style}, atoms {self.atom_ids}'
         #print_str = f', parameters {self.parameters}'
         return print_str
+    
+    def verify_parameters(self, parameters: list):
+        '''
+        Function to compare number and type of parameters provided with the bond style parameter template
+        Bond styles allowing multiple sets of parameters list a parameter N_sub_params followed by an int-type parameter
+            - the int parameter provided specifies the number of repeated sub-parameter sets to expect
+        '''
+        # Build list of expected type of each parameter
+        param_type_list = []
+        i_param = 0
+        for param in self.style.params:
+            if param[0] == 'N_sub_params':
+                if len(parameters) <= i_param:
+                    raise Exception('Not enough parameters provided')
+                if not isinstance(parameters[i_param], param[1]):
+                    raise Exception('Invalid number of sub-parameter lines to include (must be int)')
+                N_sub_params = parameters[i_param]
+            if param[0] == 'sub_params':
+                sub_params = param[1]
+                for i_param_set in range(N_sub_params):
+                    for sub_param in sub_params:
+                        param_type_list.append(sub_param[1])
+                        i_param = i_param + 1
+                N_sub_params = 0
+            else:
+                param_type_list.append(param[1])
+                i_param = i_param + 1
+        
+        # Verify number of provided parameters is correct
+        if len(parameters) != len(param_type_list):
+            raise Exception('Invalid number of provided parameters')
+
+        # Verify type of each provided parameter is correct
+        for i_param, param in enumerate(parameters):
+            if not isinstance(param, param_type_list[i_param]):
+                raise Exception('Invalid bond parameter type specified')
+        
+        return 0
 
 def calc_arc_length(coord_pair: list, is_linear: bool, para_eq: list[callable], bounds: list | None = None, n_pts: int = 200) -> float:
     '''
@@ -1098,15 +1161,3 @@ def compare_lists(list_a: list, list_b: list) -> bool:
             elif not val_a == val_b:
                 lists_match = False
     return lists_match
-
-if __name__ == "__main__":
-    nodes = [[0,0], [0,1], [1,1], [1,0]]
-    (E, rho) = (0.96 * 10**6, 0.5)
-    materials = [['test_material_0', E, rho]]
-    beam_thickness = 0.002
-    xsecs = [[0, beam_thickness]]
-    elements = [[0, 1], [1, 2], [2, 3], [3, 0], [0, 2], [1, 3]]
-    constraints = [[0, 1,1,1,1,1,1], [1, 1,1,1,1,1,1]]
-    new_structure = structure(nodes, material_list = materials, xsection_list = xsecs, element_list = elements, constraint_list = constraints)
-    new_structure.discretize(0.02)
-    print(new_structure)

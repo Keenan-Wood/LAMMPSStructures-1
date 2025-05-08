@@ -1,0 +1,280 @@
+atom_style hybrid angle sphere
+units si
+processors	* * 1
+comm_modify vel yes
+
+region simulationStation block -0.023 0.023 -0.00075 0.00075 -0.0235 0.0235
+create_box 100 simulationStation bond/types 100000 extra/bond/per/atom 100 angle/types 10000 extra/angle/per/atom 100
+change_box	all boundary f f f
+
+pair_style hybrid/overlay granular lj/cut 0
+pair_coeff  * * granular hertz/material 0 0 0 tangential linear_nohistory 0 0
+pair_coeff  * * lj/cut 0 0 0
+
+special_bonds lj/coul 0 1.0 1.0
+bond_style harmonic
+angle_style cosine/shift
+
+bond_coeff * 0 0
+angle_coeff * 0 0
+fix integration all nve/sphere
+neigh_modify page 500000 one 50000
+
+
+### Here we will begin to include particles ###
+
+
+fix fix_walls_1 all wall/gran/region granular hertz/material 10000 0.25 0.25 tangential linear_nohistory 0 0 region simulationStation
+pair_coeff * * granular hertz/material 96000000.0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_1.txt 
+set type 1 diameter 0.0015
+set type 1 density 0.5
+bond_coeff 1 216000.0 0.0005
+include bonds_1.txt
+angle_coeff 1 -0.162 0.0
+include angles_1.txt
+pair_coeff 1 1 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_2.txt 
+set type 2 diameter 0.0015
+set type 2 density 0.5
+bond_coeff 2 152780.48780487807 0.0007068965517241379
+include bonds_2.txt
+angle_coeff 2 -0.11458536585365854 0.0
+include angles_2.txt
+pair_coeff 2 2 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 2 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_3.txt 
+set type 3 diameter 0.0015
+set type 3 density 0.5
+bond_coeff 3 152780.48780487807 0.0007068965517241379
+include bonds_3.txt
+angle_coeff 3 -0.11458536585365854 0.0
+include angles_3.txt
+pair_coeff 3 3 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 3 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_4.txt 
+set type 4 diameter 0.0015
+set type 4 density 0.5
+bond_coeff 4 152780.48780487807 0.0007068965517241379
+include bonds_4.txt
+angle_coeff 4 -0.11458536585365854 0.0
+include angles_4.txt
+pair_coeff 4 4 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 4 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_5.txt 
+set type 5 diameter 0.0015
+set type 5 density 0.5
+bond_coeff 5 152780.48780487807 0.0007068965517241379
+include bonds_5.txt
+angle_coeff 5 -0.11458536585365854 0.0
+include angles_5.txt
+pair_coeff 5 5 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 5 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_6.txt 
+set type 6 diameter 0.0015
+set type 6 density 0.5
+bond_coeff 6 152780.48780487807 0.0007068965517241379
+include bonds_6.txt
+angle_coeff 6 -0.11458536585365854 0.0
+include angles_6.txt
+pair_coeff 6 6 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 6 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_7.txt 
+set type 7 diameter 0.0015
+set type 7 density 0.5
+bond_coeff 7 152780.48780487807 0.0007068965517241379
+include bonds_7.txt
+angle_coeff 7 -0.11458536585365854 0.0
+include angles_7.txt
+pair_coeff 7 7 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 7 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_8.txt 
+set type 8 diameter 0.0015
+set type 8 density 0.5
+bond_coeff 8 152780.48780487807 0.0007068965517241379
+include bonds_8.txt
+angle_coeff 8 -0.11458536585365854 0.0
+include angles_8.txt
+pair_coeff 8 8 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 8 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_9.txt 
+set type 9 diameter 0.0015
+set type 9 density 0.5
+bond_coeff 9 152780.48780487807 0.0007068965517241379
+include bonds_9.txt
+angle_coeff 9 -0.11458536585365854 0.0
+include angles_9.txt
+pair_coeff 9 9 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 9 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_10.txt 
+set type 10 diameter 0.0015
+set type 10 density 0.5
+bond_coeff 10 152780.48780487807 0.0007068965517241379
+include bonds_10.txt
+angle_coeff 10 -0.11458536585365854 0.0
+include angles_10.txt
+pair_coeff 10 10 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 10 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_11.txt 
+set type 11 diameter 0.0015
+set type 11 density 0.5
+bond_coeff 11 152780.48780487807 0.0007068965517241379
+include bonds_11.txt
+angle_coeff 11 -0.11458536585365854 0.0
+include angles_11.txt
+pair_coeff 11 11 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 11 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_12.txt 
+set type 12 diameter 0.0015
+set type 12 density 0.5
+bond_coeff 12 132387.09677419355 0.0008157894736842105
+include bonds_12.txt
+angle_coeff 12 -0.09929032258064517 0.0
+include angles_12.txt
+pair_coeff 12 12 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 12 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_13.txt 
+set type 13 diameter 0.0015
+set type 13 density 0.5
+bond_coeff 13 132387.09677419355 0.0008157894736842105
+include bonds_13.txt
+angle_coeff 13 -0.09929032258064517 0.0
+include angles_13.txt
+pair_coeff 13 13 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 13 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_14.txt 
+set type 14 diameter 0.0015
+set type 14 density 0.5
+bond_coeff 14 132387.09677419355 0.0008157894736842105
+include bonds_14.txt
+angle_coeff 14 -0.09929032258064517 0.0
+include angles_14.txt
+pair_coeff 14 14 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 14 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_15.txt 
+set type 15 diameter 0.0015
+set type 15 density 0.5
+bond_coeff 15 132387.09677419355 0.0008157894736842105
+include bonds_15.txt
+angle_coeff 15 -0.09929032258064517 0.0
+include angles_15.txt
+pair_coeff 15 15 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 15 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_16.txt 
+set type 16 diameter 0.0015
+set type 16 density 0.5
+bond_coeff 16 132387.09677419355 0.0008157894736842105
+include bonds_16.txt
+angle_coeff 16 -0.09929032258064517 0.0
+include angles_16.txt
+pair_coeff 16 16 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 16 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_17.txt 
+set type 17 diameter 0.0015
+set type 17 density 0.5
+bond_coeff 17 132387.09677419355 0.0008157894736842105
+include bonds_17.txt
+angle_coeff 17 -0.09929032258064517 0.0
+include angles_17.txt
+pair_coeff 17 17 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 17 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_18.txt 
+set type 18 diameter 0.0015
+set type 18 density 0.5
+bond_coeff 18 132387.09677419355 0.0008157894736842105
+include bonds_18.txt
+angle_coeff 18 -0.09929032258064517 0.0
+include angles_18.txt
+pair_coeff 18 18 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 18 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_19.txt 
+set type 19 diameter 0.0015
+set type 19 density 0.5
+bond_coeff 19 132387.09677419355 0.0008157894736842105
+include bonds_19.txt
+angle_coeff 19 -0.09929032258064517 0.0
+include angles_19.txt
+pair_coeff 19 19 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 19 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_20.txt 
+set type 20 diameter 0.0015
+set type 20 density 0.5
+bond_coeff 20 132387.09677419355 0.0008157894736842105
+include bonds_20.txt
+angle_coeff 20 -0.09929032258064517 0.0
+include angles_20.txt
+pair_coeff 20 20 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 20 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include beam_21.txt 
+set type 21 diameter 0.0015
+set type 21 density 0.5
+bond_coeff 21 132387.09677419355 0.0008157894736842105
+include bonds_21.txt
+angle_coeff 21 -0.09929032258064517 0.0
+include angles_21.txt
+pair_coeff 21 21 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+pair_coeff 1 21 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+bond_coeff 22 132387.09677419355 0.0008157894736842106
+include bonds_22.txt
+bond_coeff 23 152780.48780487807 0.0007068965517241379
+include bonds_23.txt
+angle_coeff 22 -0.9929032258064517 0.0
+include angles_22.txt
+angle_coeff 23 -1.1458536585365857 0.0
+include angles_23.txt
+angle_coeff 24 -0.12013728129205924 -90.0
+include angles_24.txt
+
+group group_move_1 id 47 48 77 78 107 108 137 138 167 168 197 198 227 228 257 258 287 288 317 318
+fix fix_move_1 group_move_1 move linear 0 0 0
+
+group group_move_2 id 365 385 405 425 445 465 485 505 525 545
+fix fix_move_2 group_move_2 move linear 0 0 NULL
+
+group group_move_3 id 1 46
+fix fix_move_3 group_move_3 move linear 0 0 NULL
+
+group group_perturb_1 type 3 4 8 9 10 12 15 18 19 20 21
+fix fix_perturb_1 group_perturb_1 gravity 100000000 vector 1 0 0
+
+group group_perturb_2 type 2 5 6 7 11 13 14 16 17
+fix fix_perturb_2 group_perturb_2 gravity 100000000 vector -1 0 0
+
+group group_move_4 id 366 386 406 426 446 466 486 506 526 546
+fix fix_move_4 group_move_4 move linear 0 0 -405.00000000000006
+
+fix fix_viscosity_1 all viscous 0.002
+
+compute bendingE all pe/atom angle
+compute stretchingE all pe/atom bond
+dump pump all custom 1 out*.dump id type radius x y z fx fy fz c_bendingE c_stretchingE
+dump_modify pump pad 11
+
+thermo_style custom step cpu atoms
+thermo_modify lost warn
+thermo 100000
+
+timestep 1e-11
+dump_modify pump every 100000
+run 4000000
