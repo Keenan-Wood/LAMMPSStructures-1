@@ -1,0 +1,326 @@
+atom_style hybrid molecular sphere
+units si
+processors	* * 1
+comm_modify vel yes
+comm_modify cutoff 0.01
+
+region simulationStation block -0.11 0.11 -0.006 0.006 -0.015 0.015
+create_box 100 simulationStation bond/types 100000 extra/bond/per/atom 100 angle/types 10000 extra/angle/per/atom 100 dihedral/types 1000 extra/dihedral/per/atom 100
+change_box	all boundary f f f
+
+pair_style hybrid/overlay granular lj/cut 0
+pair_coeff  * * granular hertz/material 0 0 0 tangential linear_nohistory 0 0
+pair_coeff  * * lj/cut 0 0 0
+
+special_bonds lj/coul 0 1.0 1.0
+bond_style harmonic
+angle_style cosine/shift
+dihedral_style spherical
+
+bond_coeff * 0 0
+angle_coeff * 0 0
+dihedral_coeff * 1 0 1 0 1 1 90 0 1 90 0
+fix integration all nve/sphere
+neigh_modify page 500000 one 50000
+
+
+### Here we will begin to include particles ###
+
+
+fix fix_walls_1 all wall/gran/region granular hertz/material 10000 0.25 0.25 tangential linear_nohistory 0 0 region simulationStation
+pair_coeff * * granular hertz/material 10000 0 0.5 tangential linear_nohistory 0 0
+
+include structure/node_1.txt
+set type 1 diameter 0.002
+set type 1 density 0.5
+
+include structure/node_2.txt
+set type 2 diameter 0.002
+set type 2 density 0.5
+
+include structure/node_3.txt
+set type 3 diameter 0.002
+set type 3 density 0.5
+
+include structure/node_4.txt
+set type 4 diameter 0.002
+set type 4 density 0.5
+
+include structure/node_5.txt
+set type 5 diameter 0.002
+set type 5 density 0.5
+
+include structure/node_6.txt
+set type 6 diameter 0.002
+set type 6 density 0.5
+
+include structure/node_7.txt
+set type 7 diameter 0.002
+set type 7 density 0.5
+
+include structure/node_8.txt
+set type 8 diameter 0.002
+set type 8 density 0.5
+
+include structure/node_9.txt
+set type 9 diameter 0.002
+set type 9 density 0.5
+
+include structure/node_10.txt
+set type 10 diameter 0.002
+set type 10 density 0.5
+
+include structure/node_11.txt
+set type 11 diameter 0.002
+set type 11 density 0.5
+
+include structure/node_12.txt
+set type 12 diameter 0.002
+set type 12 density 0.5
+
+include structure/node_13.txt
+set type 13 diameter 0.002
+set type 13 density 0.5
+
+include structure/node_14.txt
+set type 14 diameter 0.002
+set type 14 density 0.5
+
+include structure/node_15.txt
+set type 15 diameter 0.002
+set type 15 density 0.5
+
+include structure/node_16.txt
+set type 16 diameter 0.002
+set type 16 density 0.5
+
+include structure/node_17.txt
+set type 17 diameter 0.002
+set type 17 density 0.5
+
+include structure/node_18.txt
+set type 18 diameter 0.002
+set type 18 density 0.5
+
+include structure/node_19.txt
+set type 19 diameter 0.002
+set type 19 density 0.5
+
+include structure/node_20.txt
+set type 20 diameter 0.002
+set type 20 density 0.5
+
+include structure/element_21.txt
+set type 21 diameter 0.002
+set type 21 density 0.5
+pair_coeff 21 21 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_22.txt
+set type 22 diameter 0.002
+set type 22 density 0.5
+pair_coeff 22 22 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_23.txt
+set type 23 diameter 0.002
+set type 23 density 0.5
+pair_coeff 23 23 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_24.txt
+set type 24 diameter 0.002
+set type 24 density 0.5
+pair_coeff 24 24 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_25.txt
+set type 25 diameter 0.002
+set type 25 density 0.5
+pair_coeff 25 25 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_26.txt
+set type 26 diameter 0.002
+set type 26 density 0.5
+pair_coeff 26 26 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_27.txt
+set type 27 diameter 0.002
+set type 27 density 0.5
+pair_coeff 27 27 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_28.txt
+set type 28 diameter 0.002
+set type 28 density 0.5
+pair_coeff 28 28 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_29.txt
+set type 29 diameter 0.002
+set type 29 density 0.5
+pair_coeff 29 29 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_30.txt
+set type 30 diameter 0.002
+set type 30 density 0.5
+pair_coeff 30 30 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_31.txt
+set type 31 diameter 0.002
+set type 31 density 0.5
+pair_coeff 31 31 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_32.txt
+set type 32 diameter 0.002
+set type 32 density 0.5
+pair_coeff 32 32 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_33.txt
+set type 33 diameter 0.002
+set type 33 density 0.5
+pair_coeff 33 33 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_34.txt
+set type 34 diameter 0.002
+set type 34 density 0.5
+pair_coeff 34 34 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_35.txt
+set type 35 diameter 0.002
+set type 35 density 0.5
+pair_coeff 35 35 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_36.txt
+set type 36 diameter 0.002
+set type 36 density 0.5
+pair_coeff 36 36 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_37.txt
+set type 37 diameter 0.002
+set type 37 density 0.5
+pair_coeff 37 37 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_38.txt
+set type 38 diameter 0.002
+set type 38 density 0.5
+pair_coeff 38 38 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_39.txt
+set type 39 diameter 0.002
+set type 39 density 0.5
+pair_coeff 39 39 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_40.txt
+set type 40 diameter 0.002
+set type 40 density 0.5
+pair_coeff 40 40 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_41.txt
+set type 41 diameter 0.002
+set type 41 density 0.5
+pair_coeff 41 41 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_42.txt
+set type 42 diameter 0.002
+set type 42 density 0.5
+pair_coeff 42 42 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_43.txt
+set type 43 diameter 0.002
+set type 43 density 0.5
+pair_coeff 43 43 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_44.txt
+set type 44 diameter 0.002
+set type 44 density 0.5
+pair_coeff 44 44 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_45.txt
+set type 45 diameter 0.002
+set type 45 density 0.5
+pair_coeff 45 45 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_46.txt
+set type 46 diameter 0.002
+set type 46 density 0.5
+pair_coeff 46 46 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_47.txt
+set type 47 diameter 0.002
+set type 47 density 0.5
+pair_coeff 47 47 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_48.txt
+set type 48 diameter 0.002
+set type 48 density 0.5
+pair_coeff 48 48 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_49.txt
+set type 49 diameter 0.002
+set type 49 density 0.5
+pair_coeff 49 49 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_50.txt
+set type 50 diameter 0.002
+set type 50 density 0.5
+pair_coeff 50 50 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_51.txt
+set type 51 diameter 0.002
+set type 51 density 0.5
+pair_coeff 51 51 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_52.txt
+set type 52 diameter 0.002
+set type 52 density 0.5
+pair_coeff 52 52 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_53.txt
+set type 53 diameter 0.002
+set type 53 density 0.5
+pair_coeff 53 53 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_54.txt
+set type 54 diameter 0.002
+set type 54 density 0.5
+pair_coeff 54 54 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_55.txt
+set type 55 diameter 0.002
+set type 55 density 0.5
+pair_coeff 55 55 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_56.txt
+set type 56 diameter 0.002
+set type 56 density 0.5
+pair_coeff 56 56 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_57.txt
+set type 57 diameter 0.002
+set type 57 density 0.5
+pair_coeff 57 57 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+group group_move_1 id 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+fix fix_move_1 group_move_1 move linear NULL NULL NULL
+
+group group_move_2 id 1 2
+fix fix_move_2 group_move_2 move linear 0 0 0
+bond_coeff 1 2015.9999999999995 0.0009523809523809526
+include structure/bond_1.txt
+dihedral_coeff 2 3 8.626404134789463e-05 1 0.0 1 1 90 0 1 90 0 0.000672 0 0 0 1 180.0 1 0 0 0 0.000672 0 0 0 0 0 0 1 180.0 1
+include structure/dihedral_2.txt
+bond_coeff 3 1968.5852788233478 0.0009753196981883417
+include structure/bond_3.txt
+dihedral_coeff 4 3 8.423517950850409e-05 1 180.0 1 1 90 0 1 90 0 0.0006561950929411161 0 0 0 1 179.9999999999995 1 0 0 0 0.0006561950929411161 0 0 0 0 0 0 1 179.9999999999995 1
+include structure/dihedral_4.txt
+dihedral_coeff 5 3 8.42351795085327e-05 1 0.0 1 1 90 0 1 90 0 0.0006561950929411161 0 0 0 1 179.9999999999995 1 0 0 0 0.0006561950929411161 0 0 0 0 0 0 1 179.99999999999994 1
+include structure/dihedral_5.txt
+
+group group_move_3 id 19
+fix fix_move_3 group_move_3 move linear 0 0 -0.0002
+
+fix fix_viscosity_1 all viscous 0.002
+
+compute bendingE all pe/atom angle
+compute stretchingE all pe/atom bond
+dump pump all custom 1 raw/out*.dump id type radius x y z fx fy fz c_bendingE c_stretchingE
+dump_modify pump pad 11
+
+timestep 1e-07
+dump_modify pump every 100000
+run 10000000

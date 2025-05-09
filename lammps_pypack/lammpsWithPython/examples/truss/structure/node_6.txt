@@ -1,0 +1,1 @@
+create_atoms 6 single -0.06 0.0 0.01

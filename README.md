@@ -29,10 +29,39 @@ To run the examples in LAMMPSStructures/examples, navigate to the directory and 
 
 ## Validation
 
- The proper choice of additional bond parameters ought to be justified on a case-by-case basis. Here basic 2-atom bonds and 4-atom dihedral potentials are applied by default - agreement with axial stretching and classic beam-bending formula validate their use.
+ The proper choice of additional bond parameters ought to be justified on a case-by-case basis. Here basic 2-atom bonds and 4-atom dihedral potentials are applied by default - agreement with axial stretching and classic beam-bending formula validate their use. To hold the structure together, default bonds are applied based on the specified material and xsection properties:
+ 
+ - A harmonic two-atom bond potential is used for axial stiffness:
 
+    ![alt text](readme_images/bond_harmonic.png "2-Atom Harmonic Bond Potential")
 
-The simulation-creating scripts axial.py, bending_cantilever.py, and bending_clamped.py in the validation/1d folder can be run to reproduce these results.
+    https://docs.lammps.org/bond_harmonic.html
+
+    The default stiffness applied is K = Young's Modulus * atom_diameter**2 / (2*rest_length), as validated in the original LAMMPSStructures. This bond is applied to adjacent atoms in every element, as well as to end-element atoms and the atom of a neighboring node.
+
+ - An 'angle cosine delta' three-atom bond is defined for adding bending stiffness between element pairs at nodes:
+
+    ![alt text](readme_images/angle_cosine_delta.png "3-Atom Angle Cosine Delta Potential")
+
+    https://docs.lammps.org/angle_cosine_delta.html
+
+    By default this is not applied internally - the bending rigidity is included in the dihedral spherical potential for numeric stability. The default angular stiffness, when applied between elements at nodes, is K = Young's Modulus * atom_diameter**4 / (12*rest_length), as validated in the original LAMMPSStructures.
+
+ - A 'dihedral spherical' four-atom bond adds bending rigidity and out-of-plane bending stiffness for parametricly-defined elements:
+
+    ![alt text](readme_images/dihedral_diagram.png "4-Atom Dihedral Spherical Potential")
+
+    https://docs.lammps.org/dihedral_spherical.html
+
+    The default potential applied to enforce bending rigidity follows the form of the second example in the lammps documentation:
+
+    ![alt text](readme_images/dihedral_example_input.png "4-Atom Dihedral Spherical Potential Input")
+
+    ![alt text](readme_images/dihedral_example_explanation.png "4-Atom Dihedral Spherical Potential Input Explanation")
+
+    The rest planar angles and rest dihedral angle are calculated from the atom coordinates, and the same angular stiffness as for the angle cosine delta potential is used for the planar angle stiffness. As a basic default, the dihedral stiffness is set to 0.2 times this angular stiffness for curved elements, and 0 for straight elements. Since this increases the energy in the system, greater viscosity is needed in some cases for convergence.
+
+Current work lies in not only validating the correct creation of the lammps input file, but in also fine-tuning the default dihedral stiffness parameter to more closely model the behavior of curved beams.
 
 ## ME 700 - Applied Skills
 
@@ -41,7 +70,6 @@ The simulation-creating scripts axial.py, bending_cantilever.py, and bending_cla
 ● Modular, object-oriented programming in python
 ● Thorough exception handling - Writing robust code
 ● Useful and concise documentation with standard formatting
-● Tutorial creation using markdown and Jupyter notebooks
 ● Analyzing and expand upon code written by others
 ● Interfacing with large open-source simulation software
 ● Simulation validation using problems with analytical solutions
