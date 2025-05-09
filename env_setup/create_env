@@ -3,8 +3,8 @@
 conda deactivate || true
 
 # Activate environment before installing packages
-conda create --name lammps-env
-conda activate lammps-env
+conda create --name lammps-env-1
+conda activate lammps-env-1
 
 # Install special modules
 conda install --strict-channel-priority -y -c https://conda.ovito.org -c conda-forge ovito=3.12.1

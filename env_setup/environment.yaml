@@ -1,6 +1,6 @@
 # environment.yaml
 
-name: lammps-env
+name: lammps-env-1
 channels:
   - conda-forge
   - https://conda.ovito.org
