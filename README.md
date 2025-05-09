@@ -42,13 +42,25 @@ First, a unit-cell is created, in this case a square frame with a cross member:
 
 Next, the unit cell is translated so that the final truss will be centered on the origin:
 
+```
+new_structure.translate([-d_between_beams*n_beams/2, 0, -beam_length/2], copy=False)
+```
+
 ![alt text](readme_images/structure_1_shifted.png "Truss")
 
 The unit cell is patterned along the x-axis once, to allow for the application of bonds between elements through nodes along the length (which will be applied to connect future copies as well):
 
+```
+new_structure = new_structure.pattern_linear(np.array([1,0,0]), 1, offset = d_between_beams)
+```
+
 ![alt text](readme_images/structure_1_dual-cell.png "Truss")
 
 Finally the dual-cell is patterned along the x-axis the number of times specified:
+
+```
+new_structure = new_structure.pattern_linear(np.array([1,0,0]), n_beams - 3, offset = d_between_beams)
+```
 
 ![alt text](readme_images/structure_1_patterned.png "Truss")
 
@@ -58,10 +70,40 @@ All of this works by defining affine transformations on a structure's coordinate
 *helix_array.py and the helix_array folder*
 
 This examples shows how straightforward it is to define curved elements between nodes by parametric equations.
+Here is an excerpt, showing the parametric equation definition with lambda functions. The parameter *t* is taken to be from 0 at the element's node_a to 1 at the element's node_b, and the value of the parametric equations should be 0 at node_a, and node_b.coords - node_a.coords at node_b.
+
+```
+node_diameter = beam_thickness
+nodes = [
+    ([0, 0, 0], node_diameter),
+    (None, node_diameter),
+    ([d_between_beams, 0, 0], node_diameter),
+    (None, node_diameter)
+    ]
+constraints = [[1, 1,1,1], [3, 1,1,1]]
+
+(E, rho) = (E_beams, density)
+materials = [['test_material_0', E, rho]]
+xsecs = [[0, beam_thickness]]
+
+r_helix = 0.004
+N_turns = 15
+param_eqs = [lambda t: r_helix*(np.cos(N_turns*2*np.pi*t) - 1),
+             lambda t: r_helix*np.sin(N_turns*2*np.pi*t),
+             lambda t: -beam_length*t]
+elements = [(0, 1, param_eqs), (2, 3, param_eqs), (0,2)]
+
+new_structure = lstruct.Structure(
+    node_list = nodes,
+    material_list = materials,
+    xsection_list = xsecs,
+    element_list = elements,
+    constraint_list = constraints)
+```
+
+![alt text](readme_images/helix_array.png "Helix Array")
 
 ![alt text](readme_images/test_helices.gif "Helix Animation")
-
-
 
 ## Validation
 
