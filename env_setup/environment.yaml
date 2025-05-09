@@ -1,0 +1,16 @@
+# environment.yaml
+
+name: lammps-env
+channels:
+  - conda-forge
+  - https://conda.ovito.org
+dependencies:
+  - python=3.12.9
+  - mpi4py
+#  - openmpi
+  - mpich=4.2.2
+  - ovito=3.12.0
+  - pygifsicle
+  - pip
+  - pip:
+    - -r requirements.txt
