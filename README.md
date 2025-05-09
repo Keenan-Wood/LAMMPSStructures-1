@@ -164,7 +164,7 @@ Current work lies in not only validating the correct creation of the lammps inpu
 ● Standard FEA geometry setup - ie. definition with nodes, elements, materials, etc.
 
 ## End Extended Version readme
-The following sections of the readme is left unchanged from the original LAMMPSStructures, for easy reference. Future consolidation will see these sections merged.
+The following sections of the readme is left unchanged from the original LAMMPSStructures, for easy reference. Future consolidation will see these sections merged. Current work includes implementing module testing with pytest, fixing dihedral potential numerical stabillity issues, and expanding on tutorials (and converting to jupyter notebooks). 
 
 ## Intro
 
