@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from lammpsWithPython.lammps_simulation import *
-from lammpsWithPython.lammps_render import *
+import lammpsWithPython.lammps_simulation as lsim
+import lammpsWithPython.lammps_render as lrend
 import sys
 import pathlib
 
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     timestep = 1 * 10 ** -7
     
     # Start a simulation with the name simname
-    sim = Simulation(simname, 3, n_beams * d_between_beams, 0.01, 0.1)
+    sim = lsim.Simulation(simname, 3, n_beams * d_between_beams, 0.01, 0.1)
     # Make the simulationStation hard. We can also do this sim periodically, so this is not required
     sim.add_walls(youngs_modulus = E_walls)
 
@@ -60,9 +60,9 @@ if __name__ == "__main__":
     sim.run_simulation(simtime, timestep)
 
     # Call lammps to run simulation
-    run_lammps(sim)
+    lsim.run_lammps(sim)
 
     # Render dump files with Ovito
     img_size = (640, 480)
     sim_path = pathlib.Path(__file__).parent.resolve()
-    render_dumps(img_size, str(sim_path) + f'/{simname}', orient_name=['front'])
+    lrend.render_dumps(img_size, str(sim_path) + f'/{simname}', orient_name=['front'])

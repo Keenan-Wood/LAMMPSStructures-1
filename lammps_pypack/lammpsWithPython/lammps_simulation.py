@@ -10,7 +10,7 @@ from mpi4py import MPI
 from lammps import lammps
 
 import deprecation
-from lammpsWithPython import lammps_structure
+from .lammps_structure import *
 
 # General TODO
 ## add_bonds, add_bond_types | Reassign bond.type_id to new bond type IDs (make a bond_type object)

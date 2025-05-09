@@ -13,12 +13,12 @@ The lammps_structure.py, lammps_render.py, lammps_bond_styles.py, and lammps_uti
 
 ## Getting Started & Reproducing Results
 
-To get started, clone the repository, navigate to the env_setup folder, and in a terminal enter the commands
+To get started, clone the repository, navigate to the env_setup folder, and in a terminal enter the commands:
 
 conda env create -f environment.yaml
 conda activate lammps-env-1
 
-This creates and activates a conda environment called 'lammps-env-1' - please edit the name of the environment if there is already a different lammps-env-1.
+This creates and activates a conda environment called 'lammps-env-1' - please edit the name of the environment in the environment.yaml file if there is already a different lammps-env-1.
 
 To run the examples in LAMMPSStructures/examples, navigate to the directory and run the python script (ie. from examples/mushroom, enter the command 'python mushroom.py mushroom_sim_1'). Some examples, like this mushroom script, require an argument for the simulation name - a folder with this name will be created to hold simulation files.
 

@@ -6,8 +6,8 @@ import warnings
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
-from lammpsWithPython import lammps_utils
-from lammpsWithPython import lammps_bond_styles
+from .lammps_utils import *
+from .lammps_bond_styles import *
 
 ## General TODO:
 ## bonds - Add bond_type object and refactor bond type handling
