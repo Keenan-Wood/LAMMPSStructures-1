@@ -8,14 +8,15 @@ conda activate lammps-env-1
 
 # Install special modules
 conda install --strict-channel-priority -y -c https://conda.ovito.org -c conda-forge ovito=3.12.1
-#pip install "git+https://github.com/MoSS-BU/LAMMPSStructures.git@3bcd2890a10b54ff05f0e1b7d5dce8d6f6e3e107#subdirectory=lammps_pypack"
+pip install "git+https://github.com/MoSS-BU/LAMMPSStructures.git#subdirectory=lammps_pypack"
 conda install -c conda-forge pandas mpi4py pygifsicle imageio openmpi
 
-# Build LAMMPS with openmpi (for SCC - simply pip install lammps otherwise)
-#cd /projectnb/moss-me/mylammps
-#mkdir build
-#cd build
+# Build LAMMPS with openmpi (for multi-core parallelization on the SCC - simply pip install lammps otherwise)
+# Change the cd below to a folder you can access (where lammps will be built)
+cd /projectnb/moss-me/mylammps
+mkdir build
+cd build
 
-#cmake -C ../cmake/presets/most.cmake -DCMAKE_INSTALL_PREFIX:PATH=$CONDA_PREFIX -DBUILD_SHARED_LIBS=ON ../cmake
-#cmake --build . --target install
-#cmake --build . --target install-python
+cmake -C ../cmake/presets/most.cmake -DCMAKE_INSTALL_PREFIX:PATH=$CONDA_PREFIX -DBUILD_SHARED_LIBS=ON ../cmake
+cmake --build . --target install
+cmake --build . --target install-python

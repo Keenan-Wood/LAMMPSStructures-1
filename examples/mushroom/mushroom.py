@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
-from lammpsWithPython.lammps_object import Simulation
+from lammpsWithPython.lammps_simulation import *
+from lammpsWithPython.lammps_render import *
 import sys
+import pathlib
 
 
 if __name__ == "__main__":
@@ -56,3 +58,11 @@ if __name__ == "__main__":
     # Make the dump files and run the simulation
     sim.design_dump_files(0.01)
     sim.run_simulation(simtime, timestep)
+
+    # Call lammps to run simulation
+    run_lammps(sim)
+
+    # Render dump files with Ovito
+    img_size = (640, 480)
+    sim_path = pathlib.Path(__file__).parent.resolve()
+    render_dumps(img_size, str(sim_path) + f'/{simname}', orient_name=['front'])

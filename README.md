@@ -20,6 +20,10 @@ conda activate lammps-env-1
 
 This creates and activates a conda environment called 'lammps-env-1' - please edit the name of the environment if there is already a different lammps-env-1.
 
+To run the examples in LAMMPSStructures/examples, navigate to the directory and run the python script (ie. from examples/mushroom, enter the command 'python mushroom.py mushroom_sim_1'). Some examples, like this mushroom script, require an argument for the simulation name - a folder with this name will be created to hold simulation files.
+
+
+
 
 ## Validation
 
