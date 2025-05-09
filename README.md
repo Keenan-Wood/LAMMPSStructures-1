@@ -153,7 +153,7 @@ Current work lies in not only validating the correct creation of the lammps inpu
 
 ● Useful and concise documentation with standard formatting
 
-● Analyzing and expand upon code written by others
+● Analyzing and expanding upon code written by others
 
 ● Interfacing with large open-source simulation software
 
