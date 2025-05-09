@@ -17,7 +17,7 @@ import lammpsWithPython.lammps_structure as lstruct
 import lammpsWithPython.lammps_simulation as lsim
 import lammpsWithPython.lammps_render as lrend
 
-simname = "test_simple_beam"
+simname = "simple_cantilever_validation"
 
 beam_length = 0.095
 beam_thickness = 0.002
@@ -36,7 +36,7 @@ simtime = 1
 
 # Start a simulation with the name simname
 sim_path = pathlib.Path(__file__).parent.resolve()
-sim = lsim.Simulation(simname, 3, 0.02, beam_thickness + 0.01, beam_length + 0.01, sim_dir = sim_path)
+sim = lsim.Simulation(simname, 3, beam_length + 0.01, beam_thickness + 0.01, 0.03, sim_dir = sim_path)
 # Make the simulationStation hard. We can also do this sim periodically, so this is not required
 sim.add_walls(youngs_modulus = E_walls)
 sim.turn_on_granular_potential(youngs_modulus = E_walls)
@@ -45,10 +45,10 @@ sim.turn_on_granular_potential(youngs_modulus = E_walls)
 # Here the coordinates of node 1 and 3 will be calculated from the parametric equations we provide the elements
 node_diameter = beam_thickness
 nodes = [
-    ([0, 0, -beam_length/2], node_diameter),
-    ([0, 0, beam_length/2], node_diameter)
+    ([-beam_length/2, 0, 0], node_diameter),
+    ([beam_length/2, 0, 0], node_diameter)
     ]
-constraints = [[0, 1,1,1,1,1,1]]
+constraints = [[0, 1,1,1]]
 
 (E, rho) = (E_beams, density)
 materials = [['test_material_0', E, rho]]
@@ -72,21 +72,14 @@ new_structure.plot(str(sim_path) + f'/{simname}/', 'structure_1.png')
 # Add structure atoms to simulation, apply constraints, and add bond types, bonds
 sim.add_atoms(structure=new_structure)
 sim.apply_node_constraints(new_structure.nodes)
+# Clamp particle next to fixed node
+sim.move(particles = new_structure.elements[0].atoms[0].id, xvel = 0, yvel = 0, zvel = 0)
 sim.add_bond_types(structure=new_structure)
 sim.add_bonds(structure=new_structure)
 
 # Actuate downward
-#center_point = [int(n_beams*Np_beam + Np_hori + Np_hori/2)]
-#sim.move(particles = center_point, xvel = 0, yvel = 0, zvel = -squish_factor * beam_length / simtime)
 atoms_to_move = [new_structure.nodes[1].atom.id]
 sim.move(particles = atoms_to_move, xvel = 0, yvel = 0, zvel = -squish_factor * beam_length / simtime)
-
-# Perturb the beams to buckle to the left or right randomly
-#dirs = np.random.rand(len(beam_positions),1)
-#p1 = sim.perturb(type = [i+1 for i in np.where(dirs>0.5)[0].tolist()],xdir = 1)
-#p2 = sim.perturb(type = [i+1 for i in np.where(dirs<=0.5)[0].tolist()],xdir = -1)
-mid_atom_ids = [new_structure.get_atom_id([0, 1], 0.5)]
-sim.perturb(particles = mid_atom_ids, xdir = 1)
 
 # Add the viscosity for energy dissipation
 sim.add_viscosity(viscosity)

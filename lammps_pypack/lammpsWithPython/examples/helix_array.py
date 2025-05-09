@@ -13,9 +13,9 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-import lammps_structure as lstruct
-import lammps_simulation as lsim
-import lammps_render as lrend
+import lammpsWithPython.lammps_structure as lstruct
+import lammpsWithPython.lammps_simulation as lsim
+import lammpsWithPython.lammps_render as lrend
 
 simname = "helix_array"
 

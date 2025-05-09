@@ -22,6 +22,8 @@ This creates and activates a conda environment called 'lammps-env-1' - please ed
 
 To run the examples in LAMMPSStructures/examples, navigate to the directory and run the python script (ie. from examples/mushroom, enter the command 'python mushroom.py mushroom_sim_1'). Some examples, like this mushroom script, require an argument for the simulation name - a folder with this name will be created to hold simulation files.
 
+To run the examples using the new lammps_structure.py module, navigate to the lammps_pypack/lammpsWithPython/examples directory (https://github.com/Keenan-Wood/LAMMPSStructures-1/tree/main/lammps_pypack/lammpsWithPython/examples/) and simply run the python script corresponding to the chosen example (ie. run the command 'python helix_array.py').
+
 ## Example code
 The following examples showcasing the new lammps_structure.py functionality are located in lammps_pypack/lammpsWithPython/examples (https://github.com/Keenan-Wood/LAMMPSStructures-1/tree/main/lammps_pypack/lammpsWithPython/examples/).
 
