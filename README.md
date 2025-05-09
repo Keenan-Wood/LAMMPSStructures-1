@@ -66,14 +66,23 @@ Current work lies in not only validating the correct creation of the lammps inpu
 ## ME 700 - Applied Skills
 
 ● Github project structuring and management
+
 ● Coding environment setup and automation (bash script)
+
 ● Modular, object-oriented programming in python
+
 ● Thorough exception handling - Writing robust code
+
 ● Useful and concise documentation with standard formatting
+
 ● Analyzing and expand upon code written by others
+
 ● Interfacing with large open-source simulation software
+
 ● Simulation validation using problems with analytical solutions
+
 ● Debugging strategies (particularly using VS Code)
+
 ● Standard FEA geometry setup - ie. definition with nodes, elements, materials, etc.
 
 ## End Extended Version readme
