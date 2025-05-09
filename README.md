@@ -15,7 +15,7 @@ The lammps_structure.py, lammps_render.py, lammps_bond_styles.py, and lammps_uti
 
 To get started, clone the repository, navigate to the env_setup folder, and in a terminal enter the commands
 
-conda env create -f environment.yml
+conda env create -f environment.yaml
 conda activate lammps-env-1
 
 This creates and activates a conda environment called 'lammps-env-1' - please edit the name of the environment if there is already a different lammps-env-1.
