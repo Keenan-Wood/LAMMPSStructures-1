@@ -2,7 +2,7 @@
 
 ## Intro to the Extended Version
 
-This package makes the setup of highly-customizable LAMMPS simulations of complex elastic structures simple. Its main purpose is to abstract away from the minutia of LAMMPS primitives to the FEA-inspired world of structures defined by nodes and connections between nodes.
+This package makes the setup of highly-customizable LAMMPS simulations of complex elastic structures simple. Its main purpose is to abstract away from the minutia of LAMMPS primitives to the FEA-inspired world of structures defined by nodes and connections between nodes. The source files are in the lammps_pypack/lammpsWithPython directory: https://github.com/Keenan-Wood/LAMMPSStructures-1/tree/main/lammps_pypack/lammpsWithPython.
 
 This project was forked from the original LAMMPSStructures (https://github.com/adguerra/LAMMPSStructures), written by Arman Guerra. This extension provides a new, more general framework for defining elastic structures in LAMMPS, as well as direct integration with LAMMPS and the visualization software Ovito via python - amounting to a substantial overhaul. Changes made were designed with backwards compatibility in mind - scripts using the previous version should still run identically (albeit with deprecation warnings for certain replaced methods).
 
