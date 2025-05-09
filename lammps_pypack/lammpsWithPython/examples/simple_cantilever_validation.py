@@ -19,7 +19,7 @@ import lammpsWithPython.lammps_render as lrend
 
 simname = "simple_cantilever_validation"
 
-beam_length = 0.095
+beam_length = 0.1
 beam_thickness = 0.002
 Np_beam = 150
 Np_side = 20
@@ -28,7 +28,7 @@ E_beams = 0.96 * 10 ** 6
 E_walls = 10 ** 4
 
 density = 0.5
-viscosity = 2 * 10 ** -7 #* 10**5
+viscosity = 2 * 10 ** -7 #* 10**3
 timestep = 1 * 10 ** -7
 dump_timestep = 10 ** -2
 simtime = 1
@@ -36,7 +36,7 @@ simtime = 1
 
 # Start a simulation with the name simname
 sim_path = pathlib.Path(__file__).parent.resolve()
-sim = lsim.Simulation(simname, 3, beam_length + 0.01, beam_thickness + 0.01, 0.03, sim_dir = sim_path)
+sim = lsim.Simulation(simname, 3, beam_length + 0.01, beam_thickness + 0.01, 0.05, sim_dir = sim_path)
 # Make the simulationStation hard. We can also do this sim periodically, so this is not required
 sim.add_walls(youngs_modulus = E_walls)
 sim.turn_on_granular_potential(youngs_modulus = E_walls)
@@ -94,6 +94,3 @@ lsim.run_lammps(sim)
 # Render dump files with Ovito
 img_size = (640, 480)
 lrend.render_dumps(img_size, str(sim_path) + f'/{simname}', orient_name=['front'])
-
-# Run postprocessing for analtic comparison
-simple_cantilever_validation_post.py
