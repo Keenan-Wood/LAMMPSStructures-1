@@ -6,50 +6,15 @@ import warnings
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
+from lammps_utils import *
+from lammps_bond_styles import *
+
 ## General TODO:
 ## bonds - Add bond_type object and refactor bond type handling
 ## structure, node, atom - Refactor constraints in a more lammps-friendly format
 ## element, structure - Add ability to offset discretization element lengths due to different node atom diameters
 ## structure - Test rotation, circular patterning, and mirroring methods
-
-class BondStyle:
-    def __init__(
-        self,
-        bond_type: str,
-        bond_style: str,
-        N_atoms: int,
-        params: list
-        ):
-
-        self.type = bond_type
-        self.style = bond_style
-        self.N_atoms = N_atoms
-        self.params = params
-
-bond_style_list = []
-bond_style_list.append(BondStyle(
-    bond_type = 'bond',
-    bond_style = 'harmonic',
-    N_atoms = 2, 
-    params = [('stiffness', float | int), ('rest_length', float | int)]
-    ))
-bond_style_list.append(BondStyle(
-    bond_type = 'angle',
-    bond_style = 'cosine/delta',
-    N_atoms = 3,
-    params = [('energy', float | int), ('offset', float | int)]
-    ))
-bond_style_list.append(BondStyle(
-    bond_type = 'dihedral',
-    bond_style = 'spherical',
-    N_atoms = 4,
-    params = [
-        ('N_sub_params', int),
-        ('sub_params', [('energy', float | int), ('frequency_phi', int), ('offset_phi', float | int), ('u', int),
-                                           ('frequency_1', int), ('offset_1', float | int), ('v', int),
-                                           ('frequency_2', int), ('offset_2', float | int), ('w', int)])
-        ]
-    ))
+## structure, element - add automatic rest angle calculation for dihedral bonds
 
 class XSection:
     '''
@@ -410,7 +375,7 @@ class Structure:
             self.element_connections.append(new_connection)
         return
 
-    def add_node_bonds(self, element_pair: list, bond_style: BondStyle | tuple, bond_parameters: list) -> None:
+    def add_node_bonds(self, element_pair: list, bond_style: BondStyle | tuple, bond_parameters: list | None = None) -> None:
         # If element_pair is specified as a node id triplet, find matching pair of elements 
         if len(element_pair) == 3:
             if any([isinstance(nd, Node) for nd in element_pair]):
@@ -453,7 +418,24 @@ class Structure:
                 el_b_atoms = element_pair[1].atoms[-1:(-i_bnd - 2):-1]
             atom_set = el_a_atoms + [connecting_node.atom] + el_b_atoms
             atom_ids = [atm.id for atm in atom_set]
-            connecting_node.create_bond(atom_ids, bond_style, bond_parameters)
+
+            # Compute parameters specified as strings (ie. stiffnesses, rest angles)
+            computed_parameters = cp.copy(bond_parameters)
+            if not bond_parameters is None:
+                rest_lengths = [np.linalg.norm(atom_set[i + 1].coords - atom_set[i].coords) for i in range(N_atoms - 1)]
+                dvecs = [(atom_set[i+1].coords - atom_set[i].coords) / rest_lengths[i] for i in range(N_atoms - 1)]
+                plane_angles = [calc_vec_angle(dvecs[i_angle], dvecs[i_angle+1]) for i_angle in range(N_atoms - 2)]
+                for i_param, param in enumerate(computed_parameters):
+                    if param == 'angular_stiffness':
+                        calc_param_0 = element_pair[0].angular_rigidity_factor * element_pair[0].material.E * element_pair[0].xsec.atom_diameter**4 / (12*rest_lengths[0])
+                        calc_param_1 = element_pair[1].angular_rigidity_factor * element_pair[1].material.E * element_pair[1].xsec.atom_diameter**4 / (12*rest_lengths[0])
+                        if abs(calc_param_0 - calc_param_1) > 10**-8:
+                            raise Exception('Could not calculate angular stiffness due to mismatching element properties')
+                        else:
+                            computed_parameters[i_param] = calc_param_0
+                    elif param == 'rest_plane_angle':
+                        computed_parameters[i_param] = 180 - plane_angles[0]
+            connecting_node.create_bond(atom_ids, bond_style, computed_parameters)
 
         return
 
@@ -869,15 +851,17 @@ class Element:
         A function to discretize an element with spacing not greater than the specified atom distance.
         It removes overlapping atoms at nodes where elements join, and returns the list of atoms.
         '''
-        # Compute atom coordinates with parametric equations
+        # Compute atom coordinates using parametric equations and structure orientation
         N_bonds = int(np.ceil(self.length/atom_distance))
         if N_bonds < 1: raise Exception('There must be at least 2 atoms per element')
         t = np.linspace(0, 1, N_bonds + 1)
         (x_eq, y_eq, z_eq) = tuple(self.para_eq)
-        x_vec = x_eq(t) + self.node_a.coords[0]
-        y_vec = y_eq(t) + self.node_a.coords[1]
-        z_vec = z_eq(t) + self.node_a.coords[2]
-        atom_coords = np.array([x_vec, y_vec, z_vec]).T
+        atom_coords = None
+        for t_step in t:
+            coord_vec = np.array([x_eq(t_step), y_eq(t_step), z_eq(t_step)])
+            r_mat = R.from_euler('zyx', list(self.parent_structure.orient), degrees=True)
+            transformed_coords = r_mat.as_matrix() @ coord_vec + self.node_a.coords
+            atom_coords = np.vstack((atom_coords, transformed_coords)) if not atom_coords is None else transformed_coords
 
         # Remove end atom coordinates (overlapping with node atoms)
         atom_coords = atom_coords[1:-1]
@@ -909,7 +893,6 @@ class Element:
         atom_list_ids = [atm.id for atm in atom_list]
         if len(atom_list) >= 4:
             dvecs = [(atom_list[i+1].coords[:] - atom_list[i].coords[:]) / rest_length for i in range(N_bonds)]
-            calc_vec_angle = lambda vec_a, vec_b: 180 - (180/np.pi) * np.atan2(np.linalg.norm(np.cross(vec_a, vec_b)), np.dot(vec_a, vec_b))
             plane_angles = [calc_vec_angle(dvecs[i_angle], dvecs[i_angle+1]) for i_angle in range(N_bonds - 1)]
 
             # Calculate dihedral angles (angle between half-planes formed by each subsequent group of three nodes)
@@ -1112,52 +1095,3 @@ class Bond:
                 raise Exception('Invalid bond parameter type specified')
         
         return 0
-
-def calc_arc_length(coord_pair: list, is_linear: bool, para_eq: list[callable], bounds: list | None = None, n_pts: int = 200) -> float:
-    '''
-    Numerically calculate the arc length of a curve defined by parametric equations between the provided bounds.
-    It uses the numpy gradient and trapz functions, and allows the number of points (n_pts) to be specified.
-
-    Arguments:
-        - para_eq: list[callable] (1 x 3) - [x_eq(), y_eq(), z_eq()] defining x, y, and z with single parameter
-        - bounds: list = [0, 1] (1 x 2) - the start and end values of the parameter to integrate between
-        - n_pts: int = 200 - the number of points used to evaluate the parametric equations for numeric integration
-    
-    Outputs:
-        - length: float - The calculated arc-length between the start and end points along the curve.
-    '''
-    if is_linear is False:
-        if bounds is None: bounds = [0, 1]
-        t = np.linspace(bounds[0], bounds[1], n_pts)
-        (x, y, z) = (para_eq[0](t), para_eq[1](t), para_eq[2](t))
-        length = np.trapz(np.sqrt(np.gradient(x, t)**2 + np.gradient(y, t)**2 + np.gradient(z, t)**2), t)
-    else:
-        length = np.linalg.norm(coord_pair[1] - coord_pair[0])
-    return length
-
-def compare_lists(list_a: list, list_b: list) -> bool:
-    '''
-    Compare two lists; Return true if the lists are equal element-wise
-    Runs recursively if elements of both lists are themselves lists
-    '''
-    lists_match = True
-    if list_a is None or list_b is None:
-        lists_match = False
-    elif len(list_a) != len(list_b):
-        lists_match = False
-    else:
-        for i, val_a in enumerate(list_a):
-            val_b = list_b[i]
-            if not type(val_a) is type(val_b):
-                lists_match = False
-            elif isinstance(val_a, list):
-                lists_match = compare_lists(val_a, val_b)
-            elif isinstance(val_a, np.ndarray):
-                if not all(val_a == val_b):
-                    lists_match = False
-            elif isinstance(val_a, float):
-                if abs(val_a - val_b) > 10 ** -10:
-                    lists_match = False
-            elif not val_a == val_b:
-                lists_match = False
-    return lists_match

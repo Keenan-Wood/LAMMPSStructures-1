@@ -50,12 +50,8 @@ group group_move_2 id 1
 fix fix_move_2 group_move_2 move linear 0 0 0
 bond_coeff 1 3031.5789473684213 0.0006333333333333333
 include structure/bond_1.txt
-dihedral_coeff 2 3 0.0002594407258583298 1 0.0 1 1 90 0 1 90 0 0.0020210526315789477 0 0 0 1 180.0 1 0 0 0 0.0010105263157894739 0 0 0 0 0 0 1 180.0 1
+dihedral_coeff 2 3 0.0 1 0.0 1 1 90 0 1 90 0 0.0010105263157894739 0 0 0 1 180.0 1 0 0 0 0.0010105263157894739 0 0 0 0 0 0 1 180.0 1
 include structure/dihedral_2.txt
-dihedral_coeff 3 3 0.0002594407258583298 1 0.0 1 1 90 0 1 90 0 0.0010105263157894739 0 0 0 1 180.0 1 0 0 0 0.0010105263157894739 0 0 0 0 0 0 1 180.0 1
-include structure/dihedral_3.txt
-dihedral_coeff 4 3 0.0002594407258583298 1 0.0 1 1 90 0 1 90 0 0.0010105263157894739 0 0 0 1 180.0 1 0 0 0 0.0020210526315789477 0 0 0 0 0 0 1 180.0 1
-include structure/dihedral_4.txt
 
 group group_move_3 id 2
 fix fix_move_3 group_move_3 move linear 0 0 -0.019000000000000003
@@ -63,7 +59,7 @@ fix fix_move_3 group_move_3 move linear 0 0 -0.019000000000000003
 group group_perturb_1 id 77
 fix fix_perturb_1 group_perturb_1 gravity 1e-05 vector 1 0 0
 
-fix fix_viscosity_1 all viscous 1.9999999999999998e-05
+fix fix_viscosity_1 all viscous 2e-07
 
 compute bendingE all pe/atom angle
 compute stretchingE all pe/atom bond

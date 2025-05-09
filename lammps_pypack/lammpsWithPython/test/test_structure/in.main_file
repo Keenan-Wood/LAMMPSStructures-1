@@ -115,58 +115,27 @@ set type 19 diameter 0.002
 set type 19 density 0.5
 pair_coeff 19 19 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
 
-include structure/element_20.txt
-set type 20 diameter 0.002
-set type 20 density 0.5
-pair_coeff 20 20 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
-
-include structure/element_21.txt
-set type 21 diameter 0.002
-set type 21 density 0.5
-pair_coeff 21 21 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
-
-include structure/element_22.txt
-set type 22 diameter 0.002
-set type 22 density 0.5
-pair_coeff 22 22 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
-
-include structure/element_23.txt
-set type 23 diameter 0.002
-set type 23 density 0.5
-pair_coeff 23 23 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
-
-group group_move_1 id 2 4 6 8 10
+group group_move_1 id 1 2 3 4 5 6 7 8 9 10
 fix fix_move_1 group_move_1 move linear NULL NULL NULL
-
-group group_move_2 id 1 3 5 7 9
-fix fix_move_2 group_move_2 move linear 0 0 0
-bond_coeff 1 1925.88888185834 0.0009969422525287867
+bond_coeff 1 1928.3292993163782 0.000995680561759171
 include structure/bond_1.txt
-dihedral_coeff 2 3 7.124106907238169e-05 1 -6.260229626655123 1 1 90 0 1 90 0 0.0006419629606194468 0 0 0 1 162.5224400971661 1 0 0 0 0.0006419629606194468 0 0 0 0 0 0 1 162.52244009716662 1
+dihedral_coeff 2 3 2.7531239080645893e-05 1 -6.192447170654956 1 1 90 0 1 90 0 0.0006427764331054596 0 0 0 1 169.16488265196455 1 0 0 0 0.0006427764331054596 0 0 0 0 0 0 1 169.164882651964 1
 include structure/dihedral_2.txt
 bond_coeff 3 2015.9999999999995 0.0009523809523809526
 include structure/bond_3.txt
 dihedral_coeff 4 3 8.626404134789463e-05 1 0.0 1 1 90 0 1 90 0 0.000672 0 0 0 1 180.0 1 0 0 0 0.000672 0 0 0 0 0 0 1 180.0 1
 include structure/dihedral_4.txt
-angle_coeff 5 0.00128 90
+angle_coeff 5 0.0012796081452526153 84.58244132598207
 include structure/angle_5.txt
+angle_coeff 6 0.0012796081452526153 95.41755867401794
+include structure/angle_6.txt
 
-group group_move_3 id 2 4 6 8 10
-fix fix_move_3 group_move_3 move wiggle 0 0 0.002 1.0
+group group_move_2 id 1 3 5 7 9 413 414 415 416 417 418 419 420 421 422 423 424 425 426 427 428 429 430 431 432 634 635 636 637 638 639 640 641 642 643 644 645 646 647 648 649 650 651 652 653 855 856 857 858 859 860 861 862 863 864 865 866 867 868 869 870 871 872 873 874 1076 1077 1078 1079 1080 1081 1082 1083 1084 1085 1086 1087 1088 1089 1090 1091 1092 1093 1094 1095 11 212 433 654 875
+fix fix_move_2 group_move_2 move wiggle 0 0 0.0001 0.1
 
-group group_move_4 id 611 612 613 614 615 616 617 618 619 620 621 622 623 624 625 626 627 628 629 630
-fix fix_move_4 group_move_4 move linear 0 0 0
+fix fix_viscosity_1 all viscous 0.02
 
-group group_move_5 id 941 942 943 944 945 946 947 948 949 950 951 952 953 954 955 956 957 958 959 960
-fix fix_move_5 group_move_5 move linear 0 0 0
-
-group group_move_6 id 1271 1272 1273 1274 1275 1276 1277 1278 1279 1280 1281 1282 1283 1284 1285 1286 1287 1288 1289 1290
-fix fix_move_6 group_move_6 move linear 0 0 0
-
-group group_move_7 id 1601 1602 1603 1604 1605 1606 1607 1608 1609 1610 1611 1612 1613 1614 1615 1616 1617 1618 1619 1620
-fix fix_move_7 group_move_7 move linear 0 0 0
-
-fix fix_viscosity_1 all viscous 2e-07
+fix grav all gravity 9.8 vector 0 0 -1
 
 compute bendingE all pe/atom angle
 compute stretchingE all pe/atom bond

@@ -1,8 +1,0 @@
-create_bonds single/dihedral 6 2 591 592 593
-create_bonds single/dihedral 6 1 611 612 613
-create_bonds single/dihedral 6 4 921 922 923
-create_bonds single/dihedral 6 3 941 942 943
-create_bonds single/dihedral 6 6 1251 1252 1253
-create_bonds single/dihedral 6 5 1271 1272 1273
-create_bonds single/dihedral 6 8 1581 1582 1583
-create_bonds single/dihedral 6 7 1601 1602 1603

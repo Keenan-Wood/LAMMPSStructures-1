@@ -1,5 +1,13 @@
 # LAMMPSStructures
 
+## Intro to the Extended Version
+
+## Getting Started
+
+## Validation
+
+## ME 700 - Skills Used
+
 ## Intro
 
 The goal of this repository is to document and provide some examples for a python package which facilitates the use of [LAMMPS](https://www.lammps.org/#gsc.tab=0) as a simulation tool for elastic materials. This python package does not simulate things on its own, rather, it contains a class and functions that allow you to write a set of files which can then be run with LAMMPS.

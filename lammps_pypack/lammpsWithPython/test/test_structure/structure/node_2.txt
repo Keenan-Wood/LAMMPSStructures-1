@@ -1,1 +1,1 @@
-create_atoms 2 single -0.05 -3.2338103265129185e-17 -0.05
+create_atoms 2 single -0.05 -6.858022075225178e-18 -0.05
