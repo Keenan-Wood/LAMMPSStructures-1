@@ -23,12 +23,12 @@ beam_length = 0.095
 beam_thickness = 0.002
 Np_beam = 150
 Np_side = 20
-squish_factor = 0.2
+squish_factor = 0.1
 E_beams = 0.96 * 10 ** 6
 E_walls = 10 ** 4
 
 density = 0.5
-viscosity = 2 * 10 ** -7 #* 10**2
+viscosity = 2 * 10 ** -7 #* 10**5
 timestep = 1 * 10 ** -7
 dump_timestep = 10 ** -2
 simtime = 1
@@ -95,6 +95,5 @@ lsim.run_lammps(sim)
 img_size = (640, 480)
 lrend.render_dumps(img_size, str(sim_path) + f'/{simname}', orient_name=['front'])
 
-# Stitch gifs into one composite gif
-#gif_fnames = ['ovito_anim_front.gif', 'ovito_anim_perspective.gif']
-#lrend.stitch_gifs(str(sim_path) + f'/{simname}', gif_fnames, (1,2), [0,1])
+# Run postprocessing for analtic comparison
+simple_cantilever_validation_post.py
