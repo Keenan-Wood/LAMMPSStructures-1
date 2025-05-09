@@ -3,5 +3,7 @@ scipy
 pandas==2.2.3
 matplotlib
 imageio
+deprecation
+ovito
 lammps
 lammpswithpython @ git+https://github.com/Keenan-Wood/LAMMPSStructures-1/#egg=lammpswithpython&subdirectory=lammps_pypack
