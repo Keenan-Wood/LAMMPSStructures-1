@@ -2,11 +2,40 @@
 
 ## Intro to the Extended Version
 
+This package makes the setup of highly-customizable LAMMPS simulations of complex elastic structures simple. Its main purpose is to abstract away from the minutia of LAMMPS primitives to the FEA-inspired world of structures defined by nodes and connections between nodes.
+
+This project was forked from the original LAMMPSStructures (https://github.com/adguerra/LAMMPSStructures), written by Arman Guerra. This extension provides a new, more general framework for defining elastic structures in LAMMPS, as well as direct integration with LAMMPS and the visualization software Ovito via python - amounting to a substantial overhaul. Changes made were designed with backwards compatibility in mind - scripts using the previous version should still run identically (albeit with deprecation warnings for certain replaced methods).
+
+The example and validation simulations mentioned in the original project's readme (below), the project file structure, and most of the lammps_simulation.py module are part of the original LAMMPSStructures project.
+The lammps_structure.py, lammps_render.py, lammps_bond_styles.py, and lammps_utils.py modules, as well as the add_atoms(), apply_node_constraints(), add_bond_types(), add_bonds(), and run_lammps() methods in lammps_simulation.py are new additions, as well as the examples and validation simulations within the lammpsWithPython folder.
+
+
+
 ## Getting Started
 
 ## Validation
 
-## ME 700 - Skills Used
+ The proper choice of additional bond parameters ought to be justified on a case-by-case basis. Here basic 2-atom bonds and 4-atom dihedral potentials are applied by default - agreement with axial stretching and classic beam-bending formula validate their use.
+
+
+The simulation-creating scripts axial.py, bending_cantilever.py, and bending_clamped.py in the validation/1d folder can be run to reproduce these results.
+
+## ME 700 - Applied Skills
+
+● Github project structuring and management
+● Coding environment setup and automation (bash script)
+● Modular, object-oriented programming in python
+● Thorough exception handling - Writing robust code
+● Useful and concise documentation with standard formatting
+● Tutorial creation using markdown and Jupyter notebooks
+● Analyzing and expand upon code written by others
+● Interfacing with large open-source simulation software
+● Simulation validation using problems with analytical solutions
+● Debugging strategies (particularly using VS Code)
+● Standard FEA geometry setup - ie. definition with nodes, elements, materials, etc.
+
+## End Extended Version readme
+The following sections of the readme is left unchanged from the original LAMMPSStructures, for easy reference. Future consolidation will see these sections merged.
 
 ## Intro
 

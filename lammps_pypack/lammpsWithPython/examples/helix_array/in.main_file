@@ -1,0 +1,150 @@
+atom_style hybrid molecular sphere
+units si
+processors	* * 1
+comm_modify vel yes
+comm_modify cutoff 0.01
+
+region simulationStation block -0.060000000000000005 0.060000000000000005 -0.006 0.006 -0.055 0.055
+create_box 100 simulationStation bond/types 100000 extra/bond/per/atom 100 angle/types 10000 extra/angle/per/atom 100 dihedral/types 1000 extra/dihedral/per/atom 100
+change_box	all boundary f f f
+
+pair_style hybrid/overlay granular lj/cut 0
+pair_coeff  * * granular hertz/material 0 0 0 tangential linear_nohistory 0 0
+pair_coeff  * * lj/cut 0 0 0
+
+special_bonds lj/coul 0 1.0 1.0
+bond_style harmonic
+angle_style cosine/shift
+dihedral_style spherical
+
+bond_coeff * 0 0
+angle_coeff * 0 0
+dihedral_coeff * 1 0 1 0 1 1 90 0 1 90 0
+fix integration all nve/sphere
+neigh_modify page 500000 one 50000
+
+
+### Here we will begin to include particles ###
+
+
+fix fix_walls_1 all wall/gran/region granular hertz/material 10000 0.25 0.25 tangential linear_nohistory 0 0 region simulationStation
+pair_coeff * * granular hertz/material 10000 0 0.5 tangential linear_nohistory 0 0
+
+include structure/node_1.txt
+set type 1 diameter 0.002
+set type 1 density 0.5
+
+include structure/node_2.txt
+set type 2 diameter 0.002
+set type 2 density 0.5
+
+include structure/node_3.txt
+set type 3 diameter 0.002
+set type 3 density 0.5
+
+include structure/node_4.txt
+set type 4 diameter 0.002
+set type 4 density 0.5
+
+include structure/node_5.txt
+set type 5 diameter 0.002
+set type 5 density 0.5
+
+include structure/node_6.txt
+set type 6 diameter 0.002
+set type 6 density 0.5
+
+include structure/node_7.txt
+set type 7 diameter 0.002
+set type 7 density 0.5
+
+include structure/node_8.txt
+set type 8 diameter 0.002
+set type 8 density 0.5
+
+include structure/node_9.txt
+set type 9 diameter 0.002
+set type 9 density 0.5
+
+include structure/node_10.txt
+set type 10 diameter 0.002
+set type 10 density 0.5
+
+include structure/element_11.txt
+set type 11 diameter 0.002
+set type 11 density 0.5
+pair_coeff 11 11 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_12.txt
+set type 12 diameter 0.002
+set type 12 density 0.5
+pair_coeff 12 12 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_13.txt
+set type 13 diameter 0.002
+set type 13 density 0.5
+pair_coeff 13 13 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_14.txt
+set type 14 diameter 0.002
+set type 14 density 0.5
+pair_coeff 14 14 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_15.txt
+set type 15 diameter 0.002
+set type 15 density 0.5
+pair_coeff 15 15 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_16.txt
+set type 16 diameter 0.002
+set type 16 density 0.5
+pair_coeff 16 16 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_17.txt
+set type 17 diameter 0.002
+set type 17 density 0.5
+pair_coeff 17 17 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_18.txt
+set type 18 diameter 0.002
+set type 18 density 0.5
+pair_coeff 18 18 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+include structure/element_19.txt
+set type 19 diameter 0.002
+set type 19 density 0.5
+pair_coeff 19 19 granular hertz/material 0 0 0.5 tangential linear_nohistory 0 0
+
+group group_move_1 id 1 3 5 7 9
+fix fix_move_1 group_move_1 move linear NULL NULL NULL
+
+group group_move_2 id 2 4 6 8 10
+fix fix_move_2 group_move_2 move linear 0 0 0
+bond_coeff 1 1921.9079056294927 0.0009990072856124353
+include structure/bond_1.txt
+dihedral_coeff 2 3 1.4610098019959542e-05 1 -3.6994070899658573 1 1 90 0 1 90 0 0.0006406359685431644 0 0 0 1 166.15995914494363 1 0 0 0 0.0006406359685431644 0 0 0 0 0 0 1 166.15995914494383 1
+include structure/dihedral_2.txt
+bond_coeff 3 2015.9999999999995 0.0009523809523809526
+include structure/bond_3.txt
+dihedral_coeff 4 3 8.626404134789463e-05 1 0.0 1 1 90 0 1 90 0 0.000672 0 0 0 1 180.0 1 0 0 0 0.000672 0 0 0 0 0 0 1 180.0 1
+include structure/dihedral_4.txt
+angle_coeff 5 0.0012402573858515291 83.07997957247187
+include structure/angle_5.txt
+angle_coeff 6 0.0012402573858515291 96.92002042752813
+include structure/angle_6.txt
+
+group group_move_3 id 1 3 5 7 9 763 764 765 766 767 768 769 770 771 772 773 774 775 776 777 778 779 780 781 782 1159 1160 1161 1162 1163 1164 1165 1166 1167 1168 1169 1170 1171 1172 1173 1174 1175 1176 1177 1178 1555 1556 1557 1558 1559 1560 1561 1562 1563 1564 1565 1566 1567 1568 1569 1570 1571 1572 1573 1574 1951 1952 1953 1954 1955 1956 1957 1958 1959 1960 1961 1962 1963 1964 1965 1966 1967 1968 1969 1970 11 387 783 1179 1575
+fix fix_move_3 group_move_3 move wiggle 0 0 0.001 0.01
+
+fix fix_viscosity_1 all viscous 0.002
+
+fix grav all gravity 9.8 vector 0 0 -1
+
+compute bendingE all pe/atom angle
+compute stretchingE all pe/atom bond
+dump pump all custom 1 raw/out*.dump id type radius x y z fx fy fz c_bendingE c_stretchingE
+dump_modify pump pad 11
+
+timestep 1e-07
+dump_modify pump every 100000
+run 10000000
